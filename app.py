@@ -269,9 +269,3 @@ elif selected_tab == "Where to Sell?":
     st.markdown("---")
     
     st.write("You can adjust the assumptions (e.g., margin, target sales) to analyze different scenarios.")
-
-
-# Price Prediction
-elif selected_tab == "Price Prediction":
-    st.title("💰 Price Prediction")
-    st.write("Coming soon...")
