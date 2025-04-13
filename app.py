@@ -13,47 +13,43 @@ def load_data():
 
 df = load_data()
 
-# Sidebar
-st.sidebar.title("Navigation")
-selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Price Prediction"])
-
-# Filter widgets on top
-st.sidebar.header("Filters")
-
-# State filter
-state_filter = st.sidebar.selectbox("Select State", df["state"].unique())
-
-# Location Categories filter
-location_filter = st.sidebar.selectbox("Select Location Category", df["location_categories"].unique())
-
-# Price slider (pu)
-min_price, max_price = int(df["pu"].min()), int(df["pu"].max())
-price_filter = st.sidebar.slider("Price Range", min_price, max_price, (min_price, max_price))
-
-# KM slider
-min_km, max_km = int(df["km"].min()), int(df["km"].max())
-km_filter = st.sidebar.slider("KM Driven", min_km, max_km, (min_km, max_km))
-
-# Age slider
-min_age, max_age = int(df["age"].min()), int(df["age"].max())
-age_filter = st.sidebar.slider("Age", min_age, max_age, (min_age, max_age))
-
-# Body Type filter
-bt_filter = st.sidebar.selectbox("Select Body Type", df["bt"].unique())
-
-# Apply filters to the dataset
-filtered_df = df[
-    (df["state"] == state_filter) &
-    (df["location_categories"] == location_filter) &
-    (df["pu"] >= price_filter[0]) & (df["pu"] <= price_filter[1]) &
-    (df["km"] >= km_filter[0]) & (df["km"] <= km_filter[1]) &
-    (df["age"] >= age_filter[0]) & (df["age"] <= age_filter[1]) &
-    (df["bt"] == bt_filter)
-]
-
 # Inside Data
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
+
+    # Filters in the main content
+    st.header("Filters")
+
+    # State filter
+    state_filter = st.selectbox("Select State", ["All"] + list(df["state"].unique()))
+
+    # Location Categories filter
+    location_filter = st.selectbox("Select Location Category", ["All"] + list(df["location_categories"].unique()))
+
+    # Price slider (pu)
+    min_price, max_price = int(df["pu"].min()), int(df["pu"].max())
+    price_filter = st.slider("Price Range", min_price, max_price, (min_price, max_price))
+
+    # KM slider
+    min_km, max_km = int(df["km"].min()), int(df["km"].max())
+    km_filter = st.slider("KM Driven", min_km, max_km, (min_km, max_km))
+
+    # Age slider
+    min_age, max_age = int(df["age"].min()), int(df["age"].max())
+    age_filter = st.slider("Age", min_age, max_age, (min_age, max_age))
+
+    # Body Type filter
+    bt_filter = st.selectbox("Select Body Type", ["All"] + list(df["bt"].unique()))
+
+    # Apply filters to the dataset
+    filtered_df = df[
+        (df["state"] == state_filter or state_filter == "All") &
+        (df["location_categories"] == location_filter or location_filter == "All") &
+        (df["pu"] >= price_filter[0]) & (df["pu"] <= price_filter[1]) &
+        (df["km"] >= km_filter[0]) & (df["km"] <= km_filter[1]) &
+        (df["age"] >= age_filter[0]) & (df["age"] <= age_filter[1]) &
+        (df["bt"] == bt_filter or bt_filter == "All")
+    ]
 
     # 1 Row - 5 Metrics
     col1, col2, col3, col4, col5 = st.columns(5)
@@ -77,7 +73,6 @@ if selected_tab == "Inside Data":
         avg_discount = filtered_df["discountValue"].mean()
         st.metric(label="Average Discount", value=f"₹{avg_discount:,.0f}")
 
-    st.markdown("---")
 
     # Top row with views and popularity score
     col_top1, col_top2 = st.columns(2)
@@ -148,23 +143,24 @@ if selected_tab == "Inside Data":
 
     st.markdown("---")
 
-    # New Chart - Count of Top 10 Models
-    st.subheader("🚗 Count of Top 10 Models")
+    # New Chart - Count of Top 30 Models
+    st.subheader("🚗 Count of Top 30 Models")
     
-    # Calculate count of models, sort ascending, and display top 10
+    # Calculate count of models, sort ascending, and display top 30
     model_counts = filtered_df["model"].value_counts().reset_index()
     model_counts.columns = ["model", "count"]
-    model_counts = model_counts.sort_values(by="count", ascending=True).head(10)
+    model_counts = model_counts.sort_values(by="count", ascending=True).head(30)
 
-    # Highlight the top 3 models with a different color
+    # Highlight the top 5 models with a different color
+    top_5_models = model_counts.head(5)
     model_counts["color"] = model_counts["model"].apply(
-        lambda x: "Top 3" if model_counts["count"].max() in model_counts[model_counts["model"] == x]["count"].values else "Other"
+        lambda x: "Top 5" if x in top_5_models["model"].values else "Other"
     )
 
     chart_model = alt.Chart(model_counts).mark_bar().encode(
         x=alt.X("model", sort='-y', title="Model"),
         y=alt.Y("count", title="Count of Models"),
-        color=alt.Color("color", scale=alt.Scale(domain=["Top 3", "Other"], range=["#FF5733", "#1F77B4"])),
+        color=alt.Color("color", scale=alt.Scale(domain=["Top 5", "Other"], range=["#FF5733", "#1F77B4"])),
         tooltip=["model", "count"]
     ).properties(
         width=800,  # Wider chart
