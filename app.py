@@ -68,7 +68,7 @@ if selected_tab == "Inside Data":
         st.subheader("📈 Number of Cars per Price Segment")
         price_seg = df.groupby("price_segment").agg(
             count=("price_segment", "count"),
-            avg_discount=("avgdiscountValue", "mean")
+            avg_discount=("discountValue", "mean")  # Corrected column name here
         ).reset_index()
 
         chart_seg = alt.Chart(price_seg).mark_bar().encode(
@@ -85,12 +85,12 @@ if selected_tab == "Inside Data":
     with col_chart3:
         st.subheader("💸 Average Discount per Price Segment")
         price_discount = df.groupby("price_segment").agg(
-            avg_discount_value=("discountValue", "mean")
+            avg_discount_value=("discountValue", "mean")  # Corrected column name here
         ).reset_index()
 
         chart_discount = alt.Chart(price_discount).mark_bar().encode(
             x=alt.X("price_segment", sort='-y', title="Price Segment"),
-            y=alt.Y("discountValue", title="Average Discount (₹)"),
+            y=alt.Y("avg_discount_value", title="Average Discount (₹)"),
             tooltip=["price_segment", "avg_discount_value"]
         ).properties(
             width=350,
