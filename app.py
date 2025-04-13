@@ -13,6 +13,10 @@ def load_data():
 
 df = load_data()
 
+# Sidebar
+st.sidebar.title("Navigation")
+selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Price Prediction"])
+
 # Inside Data
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
