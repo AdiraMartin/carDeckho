@@ -81,7 +81,7 @@ if selected_tab == "Inside Data":
         st.subheader("📈 Number of Cars per Price Segment")
         price_seg = df.groupby("price_segment").agg(
             count=("price_segment", "count"),
-            avg_discount=("discountValue", "mean")  # Corrected column name here
+            avg_discount=("discountValue", "mean")
         ).reset_index()
 
         chart_seg = alt.Chart(price_seg).mark_bar().encode(
@@ -98,7 +98,7 @@ if selected_tab == "Inside Data":
     with col_chart3:
         st.subheader("💸 Average Discount per Price Segment")
         price_discount = df.groupby("price_segment").agg(
-            avg_discount_value=("discountValue", "mean")  # Corrected column name here
+            avg_discount_value=("discountValue", "mean")
         ).reset_index()
 
         chart_discount = alt.Chart(price_discount).mark_bar().encode(
@@ -111,6 +111,31 @@ if selected_tab == "Inside Data":
         )
 
         st.altair_chart(chart_discount, use_container_width=True)
+
+    st.markdown("---")
+
+    # New Chart - Count of Model (Sorted Ascending)
+    st.subheader("🚗 Count of Models")
+    
+    # Calculate count of models and sort ascending
+    model_counts = df["model"].value_counts().reset_index()
+    model_counts.columns = ["model", "count"]
+    model_counts = model_counts.sort_values(by="count", ascending=True)
+
+    # Highlight the top 3 models with a different color
+    model_counts["color"] = model_counts["model"].apply(lambda x: "Top 3" if model_counts["count"].max() in model_counts[model_counts["model"] == x]["count"].values else "Other")
+
+    chart_model = alt.Chart(model_counts).mark_bar().encode(
+        x=alt.X("model", sort='-y', title="Model"),
+        y=alt.Y("count", title="Count of Models"),
+        color=alt.Color("color", scale=alt.Scale(domain=["Top 3", "Other"], range=["#FF5733", "#1F77B4"])),
+        tooltip=["model", "count"]
+    ).properties(
+        width=800,  # Wider chart
+        height=400
+    )
+
+    st.altair_chart(chart_model, use_container_width=True)
 
     st.markdown("---")
     st.subheader("Full Dataset")
