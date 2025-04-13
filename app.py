@@ -47,14 +47,14 @@ if selected_tab == "Inside Data":
 
     # Apply filters to the dataset
     filtered_df = df[
-        (df["state"] == state_filter or state_filter == "All") &
-        (df["location_categories"] == location_filter or location_filter == "All") &
+        ((df["state"] == state_filter) | (state_filter == "All")) &
+        ((df["location_categories"] == location_filter) | (location_filter == "All")) &
         (df["pu"] >= price_filter[0]) & (df["pu"] <= price_filter[1]) &
         (df["km"] >= km_filter[0]) & (df["km"] <= km_filter[1]) &
         (df["age"] >= age_filter[0]) & (df["age"] <= age_filter[1]) &
-        (df["bt"] == bt_filter or bt_filter == "All")
+        ((df["bt"] == bt_filter) | (bt_filter == "All"))
     ]
-
+    
     # 1 Row - 5 Metrics
     col1, col2, col3, col4, col5 = st.columns(5)
 
