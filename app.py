@@ -45,6 +45,19 @@ if selected_tab == "Inside Data":
 
     st.markdown("---")
 
+    # Top row with views and popularity score
+    col_top1, col_top2 = st.columns(2)
+
+    with col_top1:
+        total_views = df["views"].sum()
+        st.metric(label="Total Views", value=f"{total_views:,.0f}")
+
+    with col_top2:
+        popularity_score = total_views / len(df)
+        st.metric(label="Popularity Score", value=f"{popularity_score:.2f}")
+
+    st.markdown("---")
+
     # 3 columns side-by-side for charts
     col_chart1, col_chart2, col_chart3 = st.columns(3)
 
