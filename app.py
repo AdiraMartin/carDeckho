@@ -202,14 +202,14 @@ if selected_tab == "Inside Data":
 elif selected_tab == "Where to Sell?":
     st.title("📍 Where to Sell?")
 
-    st.header("Most Popular Locations to Sell Cars")
-    
-    # Get the most common locations and the average price for each location
-    location_counts = df.groupby("location_categories").agg(
-        number_of_cars=("location_categories", "count"),
+    st.header("Most Popular Locations to Sell Cars (Based on State)")
+
+    # Get the most common states and the average price for each state
+    state_counts = df.groupby("state").agg(
+        number_of_cars=("state", "count"),
         average_price=("pu", "mean")
     ).reset_index()
-    location_counts.columns = ["Location", "Number of Cars", "Average Price"]
+    state_counts.columns = ["State", "Number of Cars", "Average Price"]
 
     # Input for margin and target sales percentage
     margin_percentage = st.number_input("Input Margin (%)", min_value=0, max_value=100, value=5) / 100  # Convert to decimal
@@ -219,35 +219,35 @@ elif selected_tab == "Where to Sell?":
     high_profit_threshold = st.number_input("High Profit Threshold (₹)", min_value=0, value=100000)
     moderate_profit_threshold = st.number_input("Moderate Profit Threshold (₹)", min_value=0, value=50000)
 
-    # Calculate profit per location
-    location_counts["Profit per Car"] = location_counts["Average Price"] * margin_percentage
-    location_counts["Profit for Target Sales"] = location_counts["Number of Cars"] * target_sales_percentage * location_counts["Profit per Car"]
+    # Calculate profit per state
+    state_counts["Profit per Car"] = state_counts["Average Price"] * margin_percentage
+    state_counts["Profit for Target Sales"] = state_counts["Number of Cars"] * target_sales_percentage * state_counts["Profit per Car"]
 
-    # Display a bar chart for the most popular locations
-    location_chart = alt.Chart(location_counts).mark_bar().encode(
-        x=alt.X("Location", sort='-y', title="Location"),
+    # Display a bar chart for the most popular states
+    state_chart = alt.Chart(state_counts).mark_bar().encode(
+        x=alt.X("State", sort='-y', title="State"),
         y=alt.Y("Profit for Target Sales", title="Profit for Target Sales (₹)"),
-        tooltip=["Location", "Profit for Target Sales"]
+        tooltip=["State", "Profit for Target Sales"]
     ).properties(
         width=700,
         height=400
     )
 
-    st.altair_chart(location_chart, use_container_width=True)
+    st.altair_chart(state_chart, use_container_width=True)
 
     st.markdown("---")
 
     st.header("Profit Calculation and Analysis")
 
     st.write(
-        "Based on the data, we calculate the expected profit for each location based on the following assumptions:\n"
+        "Based on the data, we calculate the expected profit for each state based on the following assumptions:\n"
         "- **Margin**: The profit margin for each car sold. Adjust the margin to see the impact.\n"
-        "- **Target Sales**: The percentage of cars expected to be sold (e.g., 10% means we expect to sell 10% of the cars listed in that location).\n"
-        "The chart above shows the profit for selling the target percentage of cars in each location based on the margin and target sales you entered."
+        "- **Target Sales**: The percentage of cars expected to be sold (e.g., 10% means we expect to sell 10% of the cars listed in that state).\n"
+        "The chart above shows the profit for selling the target percentage of cars in each state based on the margin and target sales you entered."
     )
 
-    # Display location profit data
-    st.write(location_counts[["Location", "Number of Cars", "Average Price", "Profit for Target Sales"]])
+    # Display state profit data
+    st.write(state_counts[["State", "Number of Cars", "Average Price", "Profit for Target Sales"]])
 
     st.markdown("---")
 
@@ -258,13 +258,13 @@ elif selected_tab == "Where to Sell?":
         "Based on the calculated profit, here are some recommendations:"
     )
 
-    for _, row in location_counts.iterrows():
+    for _, row in state_counts.iterrows():
         if row["Profit for Target Sales"] > high_profit_threshold:  # Dynamic threshold for high profit
-            st.write(f"✔️ **{row['Location']}**: High potential for profit with ₹{row['Profit for Target Sales']:,.0f} expected for target sales.")
+            st.write(f"✔️ **{row['State']}**: High potential for profit with ₹{row['Profit for Target Sales']:,.0f} expected for target sales.")
         elif row["Profit for Target Sales"] > moderate_profit_threshold:
-            st.write(f"⚠️ **{row['Location']}**: Moderate profit potential with ₹{row['Profit for Target Sales']:,.0f} expected for target sales.")
+            st.write(f"⚠️ **{row['State']}**: Moderate profit potential with ₹{row['Profit for Target Sales']:,.0f} expected for target sales.")
         else:
-            st.write(f"❌ **{row['Location']}**: Low profit potential with ₹{row['Profit for Target Sales']:,.0f} expected for target sales.")
+            st.write(f"❌ **{row['State']}**: Low profit potential with ₹{row['Profit for Target Sales']:,.0f} expected for target sales.")
 
     st.markdown("---")
     
