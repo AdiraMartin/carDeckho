@@ -114,47 +114,56 @@ if selected_tab == "Inside Data":
         with col_chart2:
             st.subheader("📈 Price Segments")
             
-            # We use the 'price_segment' column directly here
+            # Grouping & ordering for Price Segments
             price_seg = filtered_df.groupby("price_segment").agg(
                 count=("price_segment", "count"),
                 avg_discount=("discountValue", "mean")
             ).reset_index()
-
-            # Sort price segment manually
+        
+            # Set manual order
+            price_order = ["0lakh-2lakh", "2lakh-5lakh", "5lakh-8lakh", "8lakh-10lakh", "10+lakh"]
             price_seg["price_segment"] = pd.Categorical(price_seg["price_segment"], 
-                                                        categories=["0lakh-2lakh", "2lakh-5lakh", "5lakh-8lakh", "8lakh-10lakh", "10+lakh"], 
+                                                        categories=price_order, 
                                                         ordered=True)
             price_seg = price_seg.sort_values("price_segment")
-
+        
+            # Chart for number of cars per price segment
             chart_seg = alt.Chart(price_seg).mark_bar().encode(
-                x=alt.X("price_segment", sort='-y', title="Price Segment"),
+                x=alt.X("price_segment", title="Price Segment"),
                 y=alt.Y("count", title="Number of Cars"),
                 tooltip=["price_segment", "count", alt.Tooltip("avg_discount", format=".0f", title="Avg Discount")]
             ).properties(
                 width=350,
                 height=400
             )
-
+        
             st.altair_chart(chart_seg, use_container_width=True)
-
+        
         with col_chart3:
             st.subheader("💸 Average Discount per Price Segment")
+        
+            # Grouping & ordering for Average Discount
             price_discount = filtered_df.groupby("price_segment").agg(
                 avg_discount_value=("discountValue", "mean")
             ).reset_index()
-
+        
+            price_discount["price_segment"] = pd.Categorical(price_discount["price_segment"], 
+                                                             categories=price_order, 
+                                                             ordered=True)
+            price_discount = price_discount.sort_values("price_segment")
+        
+            # Chart for average discount
             chart_discount = alt.Chart(price_discount).mark_bar().encode(
-                x=alt.X("price_segment", sort='-y', title="Price Segment"),
+                x=alt.X("price_segment", title="Price Segment"),
                 y=alt.Y("avg_discount_value", title="Average Discount (₹)"),
-                tooltip=["price_segment", "avg_discount_value"]
+                tooltip=["price_segment", alt.Tooltip("avg_discount_value", format=".0f", title="Avg Discount")]
             ).properties(
                 width=350,
                 height=400
             )
-
+        
             st.altair_chart(chart_discount, use_container_width=True)
 
-        st.markdown("---")
 
         # New Chart - Top 30 Models by Views
         st.subheader("🚗 Top 30 Models by Views")
