@@ -90,7 +90,7 @@ if selected_tab == "Inside Data":
 
         chart_discount = alt.Chart(price_discount).mark_bar().encode(
             x=alt.X("price_segment", sort='-y', title="Price Segment"),
-            y=alt.Y("avg_discount_value", title="Average Discount (₹)"),
+            y=alt.Y("discountValue", title="Average Discount (₹)"),
             tooltip=["price_segment", "avg_discount_value"]
         ).properties(
             width=350,
