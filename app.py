@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
 
 @st.cache_data
 def load_data():
@@ -9,14 +10,16 @@ def load_data():
 
 df = load_data()
 
+# Sidebar
 st.sidebar.title("Navigation")
 selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Price Prediction"])
 
-# Konten berdasarkan tab yang dipilih
+# Inside Data
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
-    # Row for
-    col1, col2 = st.columns(2)
+
+    # Mini dashboard - 5 kolom
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         st.metric(label="Total Data", value=len(df))
@@ -25,13 +28,46 @@ if selected_tab == "Inside Data":
         avg_km = df["km"].mean()
         st.metric(label="Average KM", value=f"{avg_km:,.0f} KM")
 
-    st.markdown("---")  
+    with col3:
+        avg_age = df["age"].mean()
+        st.metric(label="Average Age", value=f"{avg_age:.1f} yrs")
 
+    with col4:
+        avg_price = df["pu"].mean()
+        st.metric(label="Average Price", value=f"₹{avg_price:,.0f}")
 
+    with col5:
+        avg_discount = df["discountValue"].mean()
+        st.metric(label="Average Discount", value=f"₹{avg_discount:,.0f}")
+
+    st.markdown("---")
+
+    # Bar chart: Jumlah mobil per location_categories
+    st.subheader("📊 Jumlah Mobil per Lokasi")
+
+    location_counts = df["location_categories"].value_counts().reset_index()
+    location_counts.columns = ["location", "count"]
+
+    chart = alt.Chart(location_counts).mark_bar().encode(
+        x=alt.X("location", sort='-y', title="Location"),
+        y=alt.Y("count", title="Jumlah Mobil"),
+        tooltip=["location", "count"]
+    ).properties(
+        width=700,
+        height=400
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
+    st.markdown("---")
+    st.subheader("Full Dataset")
+
+# Where to Sell
 elif selected_tab == "Where to Sell?":
     st.title("📍 Where to Sell?")
+    st.write("Coming soon...")
 
-
+# Price Prediction
 elif selected_tab == "Price Prediction":
     st.title("💰 Price Prediction")
-
+    st.write("Coming soon...")
