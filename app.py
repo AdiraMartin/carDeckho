@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
+# Set layout ke wide
+st.set_page_config(page_title="Car Dashboard", layout="wide")
+
 @st.cache_data
 def load_data():
     file_id = "1i3V927wxBWcgjqj5JlI6YQ2ffT0uZQER"
@@ -18,8 +21,8 @@ selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Pric
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
 
-    # Row 1 - 3 Metrics
-    col1, col2, col3 = st.columns(3)
+    # 1 Row - 5 Metrics
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         st.metric(label="Total Data", value=len(df))
@@ -32,9 +35,6 @@ if selected_tab == "Inside Data":
         avg_age = df["age"].mean()
         st.metric(label="Average Age", value=f"{avg_age:.1f} yrs")
 
-    # Row 2 - 2 Metrics
-    col4, col5 = st.columns(2)
-
     with col4:
         avg_price = df["pu"].mean()
         st.metric(label="Average Price", value=f"₹{avg_price:,.0f}")
@@ -45,26 +45,46 @@ if selected_tab == "Inside Data":
 
     st.markdown("---")
 
-    # Bar chart - Mobil per lokasi
-    st.subheader("📊 Jumlah Mobil per Lokasi")
+    # 2 columns side-by-side for charts
+    col_chart1, col_chart2 = st.columns(2)
 
-    location_counts = df["location_categories"].value_counts().reset_index()
-    location_counts.columns = ["location", "count"]
+    with col_chart1:
+        st.subheader("📊 Jumlah Mobil per Lokasi")
+        location_counts = df["location_categories"].value_counts().reset_index()
+        location_counts.columns = ["location", "count"]
 
-    chart = alt.Chart(location_counts).mark_bar().encode(
-        x=alt.X("location", sort='-y', title="Location"),
-        y=alt.Y("count", title="Jumlah Mobil"),
-        tooltip=["location", "count"]
-    ).properties(
-        width=700,
-        height=400
-    )
+        chart_loc = alt.Chart(location_counts).mark_bar().encode(
+            x=alt.X("location", sort='-y', title="Location"),
+            y=alt.Y("count", title="Jumlah Mobil"),
+            tooltip=["location", "count"]
+        ).properties(
+            width=350,
+            height=400
+        )
 
-    st.altair_chart(chart, use_container_width=True)
+        st.altair_chart(chart_loc, use_container_width=True)
+
+    with col_chart2:
+        st.subheader("📈 Jumlah Mobil per Price Segment")
+        price_seg = df.groupby("price_segment").agg(
+            count=("price_segment", "count"),
+            avg_discount=("discountValue", "mean")
+        ).reset_index()
+
+        chart_seg = alt.Chart(price_seg).mark_bar().encode(
+            x=alt.X("price_segment", sort='-y', title="Price Segment"),
+            y=alt.Y("count", title="Jumlah Mobil"),
+            tooltip=["price_segment", "count", alt.Tooltip("avg_discount", format=".0f", title="Avg Discount")]
+        ).properties(
+            width=350,
+            height=400
+        )
+
+        st.altair_chart(chart_seg, use_container_width=True)
 
     st.markdown("---")
     st.subheader("Full Dataset")
-
+    st.dataframe(df)
 
 # Where to Sell
 elif selected_tab == "Where to Sell?":
