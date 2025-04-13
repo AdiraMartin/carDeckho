@@ -15,9 +15,6 @@ selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Pric
 # Konten berdasarkan tab yang dipilih
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
-    if selected_tab == "Inside Data":
-    st.title("🔍 Inside Data")
-
     # Row for
     col1, col2 = st.columns(2)
 
