@@ -213,18 +213,20 @@ elif selected_tab == "Where to Sell?":
     # Get the most common states and the average price for each state
     state_counts = df.groupby("state").agg(
         number_of_cars=("state", "count"),
-        average_price=("pu", "mean")
+        average_price=("pu", "mean"),
+        average_discount=("discountValue", "mean")  # Calculate average discount per state
     ).reset_index()
-    state_counts.columns = ["State", "Number of Cars", "Average Price"]
+    state_counts.columns = ["State", "Number of Cars", "Average Price", "Average Discount"]
 
     # Filter by price segment if the user selects a specific segment
     if price_segment_filter != "All":
         df_filtered = df[df["price_segment"] == price_segment_filter]
         state_counts_filtered = df_filtered.groupby("state").agg(
             number_of_cars=("state", "count"),
-            average_price=("pu", "mean")
+            average_price=("pu", "mean"),
+            average_discount=("discountValue", "mean")
         ).reset_index()
-        state_counts_filtered.columns = ["State", "Number of Cars", "Average Price"]
+        state_counts_filtered.columns = ["State", "Number of Cars", "Average Price", "Average Discount"]
     else:
         state_counts_filtered = state_counts  # If "All" is selected, show all states
 
@@ -236,8 +238,8 @@ elif selected_tab == "Where to Sell?":
     high_profit_threshold = st.number_input("High Profit Threshold (₹)", min_value=0, value=100000)
     moderate_profit_threshold = st.number_input("Moderate Profit Threshold (₹)", min_value=0, value=50000)
 
-    # Calculate profit per state
-    state_counts_filtered["Profit per Car"] = state_counts_filtered["Average Price"] * margin_percentage
+    # Calculate profit per state considering the discount
+    state_counts_filtered["Profit per Car"] = (state_counts_filtered["Average Price"] - state_counts_filtered["Average Discount"]) * margin_percentage
     state_counts_filtered["Profit for Target Sales"] = state_counts_filtered["Number of Cars"] * target_sales_percentage * state_counts_filtered["Profit per Car"]
 
     # Display a bar chart for the most popular states
@@ -260,11 +262,12 @@ elif selected_tab == "Where to Sell?":
         "Based on the data, we calculate the expected profit for each state based on the following assumptions:\n"
         "- **Margin**: The profit margin for each car sold. Adjust the margin to see the impact.\n"
         "- **Target Sales**: The percentage of cars expected to be sold (e.g., 10% means we expect to sell 10% of the cars listed in that state).\n"
-        "The chart above shows the profit for selling the target percentage of cars in each state based on the margin and target sales you entered."
+        "- **Discount**: The discount applied to the cars, which will reduce the total price used for calculating profit.\n"
+        "The chart above shows the profit for selling the target percentage of cars in each state based on the margin, target sales, and discount you entered."
     )
 
     # Display state profit data
-    st.write(state_counts_filtered[["State", "Number of Cars", "Average Price", "Profit for Target Sales"]])
+    st.write(state_counts_filtered[["State", "Number of Cars", "Average Price", "Average Discount", "Profit for Target Sales"]])
 
     st.markdown("---")
 
