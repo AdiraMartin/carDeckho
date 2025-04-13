@@ -21,29 +21,23 @@ selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Pric
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
 
-    # Filters in the main content
+    # Filters in columns
     st.header("Filters")
 
-    # State filter
-    state_filter = st.selectbox("Select State", ["All"] + list(df["state"].unique()))
+    # Create two columns for filters
+    col_left, col_right = st.columns(2)
 
-    # Location Categories filter
-    location_filter = st.selectbox("Select Location Category", ["All"] + list(df["location_categories"].unique()))
+    # Left column filters
+    with col_left:
+        state_filter = st.selectbox("Select State", ["All"] + list(df["state"].unique()))
+        location_filter = st.selectbox("Select Location Category", ["All"] + list(df["location_categories"].unique()))
+        price_filter = st.slider("Price Range", int(df["pu"].min()), int(df["pu"].max()), (int(df["pu"].min()), int(df["pu"].max())))
 
-    # Price slider (pu)
-    min_price, max_price = int(df["pu"].min()), int(df["pu"].max())
-    price_filter = st.slider("Price Range", min_price, max_price, (min_price, max_price))
-
-    # KM slider
-    min_km, max_km = int(df["km"].min()), int(df["km"].max())
-    km_filter = st.slider("KM Driven", min_km, max_km, (min_km, max_km))
-
-    # Age slider
-    min_age, max_age = int(df["age"].min()), int(df["age"].max())
-    age_filter = st.slider("Age", min_age, max_age, (min_age, max_age))
-
-    # Body Type filter
-    bt_filter = st.selectbox("Select Body Type", ["All"] + list(df["bt"].unique()))
+    # Right column filters
+    with col_right:
+        km_filter = st.slider("KM Driven", int(df["km"].min()), int(df["km"].max()), (int(df["km"].min()), int(df["km"].max())))
+        age_filter = st.slider("Age", int(df["age"].min()), int(df["age"].max()), (int(df["age"].min()), int(df["age"].max())))
+        bt_filter = st.selectbox("Select Body Type", ["All"] + list(df["bt"].unique()))
 
     # Apply filters to the dataset
     filtered_df = df[
@@ -54,7 +48,7 @@ if selected_tab == "Inside Data":
         (df["age"] >= age_filter[0]) & (df["age"] <= age_filter[1]) &
         ((df["bt"] == bt_filter) | (bt_filter == "All"))
     ]
-    
+
     # 1 Row - 5 Metrics
     col1, col2, col3, col4, col5 = st.columns(5)
 
@@ -77,6 +71,7 @@ if selected_tab == "Inside Data":
         avg_discount = filtered_df["discountValue"].mean()
         st.metric(label="Average Discount", value=f"₹{avg_discount:,.0f}")
 
+    st.markdown("---")
 
     # Top row with views and popularity score
     col_top1, col_top2 = st.columns(2)
@@ -111,7 +106,13 @@ if selected_tab == "Inside Data":
         st.altair_chart(chart_loc, use_container_width=True)
 
     with col_chart2:
-        st.subheader("📈 Number of Cars per Price Segment")
+        st.subheader("📈 Price Segments")
+        
+        # Custom Price Segmentation
+        bins = [0, 2, 5, 8, 10, float('inf')]
+        labels = ["0 - 2", "2 - 5", "5 - 8", "8 - 10", "10+"]
+        filtered_df["price_segment"] = pd.cut(filtered_df["pu"], bins=bins, labels=labels, right=False)
+
         price_seg = filtered_df.groupby("price_segment").agg(
             count=("price_segment", "count"),
             avg_discount=("discountValue", "mean")
@@ -147,13 +148,15 @@ if selected_tab == "Inside Data":
 
     st.markdown("---")
 
-    # New Chart - Count of Top 30 Models
-    st.subheader("🚗 Count of Top 30 Models")
+    # New Chart - Top 30 Models by Views
+    st.subheader("🚗 Top 30 Models by Views")
     
-    # Calculate count of models, sort ascending, and display top 30
-    model_counts = filtered_df["model"].value_counts().reset_index()
-    model_counts.columns = ["model", "count"]
-    model_counts = model_counts.sort_values(by="count", ascending=True).head(30)
+    # Calculate count of models, sort by views, and display top 30
+    model_counts = filtered_df.groupby("model").agg(
+        total_views=("views", "sum")
+    ).reset_index()
+    
+    model_counts = model_counts.sort_values(by="total_views", ascending=False).head(30)
 
     # Highlight the top 5 models with a different color
     top_5_models = model_counts.head(5)
@@ -163,9 +166,9 @@ if selected_tab == "Inside Data":
 
     chart_model = alt.Chart(model_counts).mark_bar().encode(
         x=alt.X("model", sort='-y', title="Model"),
-        y=alt.Y("count", title="Count of Models"),
+        y=alt.Y("total_views", title="Total Views"),
         color=alt.Color("color", scale=alt.Scale(domain=["Top 5", "Other"], range=["#FF5733", "#1F77B4"])),
-        tooltip=["model", "count"]
+        tooltip=["model", "total_views"]
     ).properties(
         width=800,  # Wider chart
         height=400
