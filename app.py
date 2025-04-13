@@ -18,8 +18,8 @@ selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Pric
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
 
-    # Mini dashboard - 5 kolom
-    col1, col2, col3, col4, col5 = st.columns(5)
+    # Row 1 - 3 Metrics
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         st.metric(label="Total Data", value=len(df))
@@ -32,6 +32,9 @@ if selected_tab == "Inside Data":
         avg_age = df["age"].mean()
         st.metric(label="Average Age", value=f"{avg_age:.1f} yrs")
 
+    # Row 2 - 2 Metrics
+    col4, col5 = st.columns(2)
+
     with col4:
         avg_price = df["pu"].mean()
         st.metric(label="Average Price", value=f"₹{avg_price:,.0f}")
@@ -42,7 +45,7 @@ if selected_tab == "Inside Data":
 
     st.markdown("---")
 
-    # Bar chart: Jumlah mobil per location_categories
+    # Bar chart - Mobil per lokasi
     st.subheader("📊 Jumlah Mobil per Lokasi")
 
     location_counts = df["location_categories"].value_counts().reset_index()
@@ -61,6 +64,7 @@ if selected_tab == "Inside Data":
 
     st.markdown("---")
     st.subheader("Full Dataset")
+
 
 # Where to Sell
 elif selected_tab == "Where to Sell?":
