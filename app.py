@@ -29,24 +29,24 @@ if selected_tab == "Inside Data":
 
     # Left column filters
     with col_left:
-        state_filter = st.selectbox("Select State", ["All"] + list(df["state"].unique()))
         location_filter = st.selectbox("Select Location Category", ["All"] + list(df["location_categories"].unique()))
-        price_filter = st.slider("Price Range", int(df["pu"].min()), int(df["pu"].max()), (int(df["pu"].min()), int(df["pu"].max())))
+        state_filter = st.selectbox("Select State", ["All"] + list(df["state"].unique()))
+        bt_filter = st.selectbox("Select Body Type", ["All"] + list(df["bt"].unique()))
 
     # Right column filters
     with col_right:
+        price_filter = st.selectbox("Select Price Segment", ["All"] + list(df["price_segment"].unique()))
+        discount_filter = st.slider("Discount Range", 0, int(df["discountValue"].max()), (0, int(df["discountValue"].max())))
         km_filter = st.slider("KM Driven", int(df["km"].min()), int(df["km"].max()), (int(df["km"].min()), int(df["km"].max())))
-        age_filter = st.slider("Age", int(df["age"].min()), int(df["age"].max()), (int(df["age"].min()), int(df["age"].max())))
-        bt_filter = st.selectbox("Select Body Type", ["All"] + list(df["bt"].unique()))
 
-    # Apply filters to the dataset
+    # Apply filters to the dataset with dependencies
     filtered_df = df[
-        ((df["state"] == state_filter) | (state_filter == "All")) &
         ((df["location_categories"] == location_filter) | (location_filter == "All")) &
-        (df["pu"] >= price_filter[0]) & (df["pu"] <= price_filter[1]) &
-        (df["km"] >= km_filter[0]) & (df["km"] <= km_filter[1]) &
-        (df["age"] >= age_filter[0]) & (df["age"] <= age_filter[1]) &
-        ((df["bt"] == bt_filter) | (bt_filter == "All"))
+        ((df["state"] == state_filter) | (state_filter == "All")) &
+        ((df["bt"] == bt_filter) | (bt_filter == "All")) &
+        ((df["price_segment"] == price_filter) | (price_filter == "All")) &
+        (df["discountValue"] >= discount_filter[0]) & (df["discountValue"] <= discount_filter[1]) &
+        (df["km"] >= km_filter[0]) & (df["km"] <= km_filter[1])
     ]
 
     # 1 Row - 5 Metrics
@@ -108,11 +108,7 @@ if selected_tab == "Inside Data":
     with col_chart2:
         st.subheader("📈 Price Segments")
         
-        # Custom Price Segmentation
-        bins = [0, 2, 5, 8, 10, float('inf')]
-        labels = ["0 - 2", "2 - 5", "5 - 8", "8 - 10", "10+"]
-        filtered_df["price_segment"] = pd.cut(filtered_df["pu"], bins=bins, labels=labels, right=False)
-
+        # We use the 'price_segment' column directly here
         price_seg = filtered_df.groupby("price_segment").agg(
             count=("price_segment", "count"),
             avg_discount=("discountValue", "mean")
