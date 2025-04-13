@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-# Set layout ke wide
+# Set layout to wide
 st.set_page_config(page_title="Car Dashboard", layout="wide")
 
 @st.cache_data
@@ -33,7 +33,7 @@ if selected_tab == "Inside Data":
 
     with col3:
         avg_age = df["age"].mean()
-        st.metric(label="Average Age", value=f"{avg_age:.1f} yrs")
+        st.metric(label="Average Age", value=f"{avg_age:.1f} years")
 
     with col4:
         avg_price = df["pu"].mean()
@@ -45,17 +45,17 @@ if selected_tab == "Inside Data":
 
     st.markdown("---")
 
-    # 2 columns side-by-side for charts
-    col_chart1, col_chart2 = st.columns(2)
+    # 3 columns side-by-side for charts
+    col_chart1, col_chart2, col_chart3 = st.columns(3)
 
     with col_chart1:
-        st.subheader("📊 Jumlah Mobil per Lokasi")
+        st.subheader("📊 Number of Cars per Location")
         location_counts = df["location_categories"].value_counts().reset_index()
         location_counts.columns = ["location", "count"]
 
         chart_loc = alt.Chart(location_counts).mark_bar().encode(
             x=alt.X("location", sort='-y', title="Location"),
-            y=alt.Y("count", title="Jumlah Mobil"),
+            y=alt.Y("count", title="Number of Cars"),
             tooltip=["location", "count"]
         ).properties(
             width=350,
@@ -65,15 +65,15 @@ if selected_tab == "Inside Data":
         st.altair_chart(chart_loc, use_container_width=True)
 
     with col_chart2:
-        st.subheader("📈 Jumlah Mobil per Price Segment")
+        st.subheader("📈 Number of Cars per Price Segment")
         price_seg = df.groupby("price_segment").agg(
             count=("price_segment", "count"),
-            avg_discount=("discountValue", "mean")
+            avg_discount=("avgdiscountValue", "mean")
         ).reset_index()
 
         chart_seg = alt.Chart(price_seg).mark_bar().encode(
             x=alt.X("price_segment", sort='-y', title="Price Segment"),
-            y=alt.Y("count", title="Jumlah Mobil"),
+            y=alt.Y("count", title="Number of Cars"),
             tooltip=["price_segment", "count", alt.Tooltip("avg_discount", format=".0f", title="Avg Discount")]
         ).properties(
             width=350,
@@ -81,6 +81,23 @@ if selected_tab == "Inside Data":
         )
 
         st.altair_chart(chart_seg, use_container_width=True)
+
+    with col_chart3:
+        st.subheader("💸 Average Discount per Price Segment")
+        price_discount = df.groupby("price_segment").agg(
+            avg_discount_value=("discountValue", "mean")
+        ).reset_index()
+
+        chart_discount = alt.Chart(price_discount).mark_bar().encode(
+            x=alt.X("price_segment", sort='-y', title="Price Segment"),
+            y=alt.Y("avg_discount_value", title="Average Discount (₹)"),
+            tooltip=["price_segment", "avg_discount_value"]
+        ).properties(
+            width=350,
+            height=400
+        )
+
+        st.altair_chart(chart_discount, use_container_width=True)
 
     st.markdown("---")
     st.subheader("Full Dataset")
