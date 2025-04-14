@@ -296,49 +296,50 @@ elif selected_tab == "Where to Sell?":
 
 elif selected_tab == "Price Prediction":
     st.title("🚗 Car Price Prediction")
-    
+
+    # Fungsi untuk load file dari Hugging Face
     @st.cache_resource
     def load_from_huggingface(url):
         response = requests.get(url)
         return joblib.load(io.BytesIO(response.content))
 
-    # Load model dan encoder dari HuggingFace
+    # Load semua resource dari Hugging Face
     base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/"
     rf_model = load_from_huggingface(base_url + "rf_model.pkl")
     scaler = load_from_huggingface(base_url + "scaler.pkl")
     encoders = load_from_huggingface(base_url + "encoders.pkl")
     mappings = load_from_huggingface(base_url + "mappings.pkl")
-    
+
+    # Fungsi untuk handle input kategorikal dengan label encoder
     def get_encoded_input(label, encoder):
-        label_list = list(encoder.classes_)  # List of labels to show in the dropdown
-        selected_label = st.selectbox(label, label_list)  # Dropdown of labels
-        encoded_value = encoder.transform([selected_label])[0]  # Encoded numeric value for the model
-        return encoded_value, selected_label
+        label_list = list(encoder.classes_)  # Label-label asli untuk dropdown
+        selected_label = st.selectbox(label, label_list)  # Tampilkan label
+        encoded_value = encoder.transform([selected_label])[0]  # Encode ke bentuk numerik
+        return encoded_value
 
     # === Input Section ===
     st.subheader("Masukkan Detail Mobil")
-    
-    # Mengambil input encoded dan label asli
-    state, state_label = get_encoded_input("State", encoders['state'])
-    brand, brand_label = get_encoded_input("Brand", encoders['brand_name'])
-    model_name, model_name_label = get_encoded_input("Model Name", encoders['model_name'])
-    variant_name, variant_name_label = get_encoded_input("Variant Name", encoders['variant_name'])
-    fuel_type, fuel_type_label = get_encoded_input("Fuel Type", encoders['ft'])
-    body_type, body_type_label = get_encoded_input("Body Type", encoders['bt'])
-    
-    # Menampilkan kelas-kelas untuk state, agar pengguna bisa melihat nilai asli
-    st.write("State classes:", encoders['state'].classes_)
 
-    tt = st.radio("Transmission Type", list(mappings['tt'].keys()))
-    utype = st.radio("User Type", list(mappings['utype'].keys()))
-    
-    km = st.number_input("Kilometer Driven", value=30000)
-    discount = st.slider("Discount (Rp)", 0, 50000000, 0, step=100000)
+    # Input kategorikal dengan encoder
+    state = get_encoded_input("State", encoders['state'])
+    brand = get_encoded_input("Brand", encoders['brand_name'])
+    model_name = get_encoded_input("Model Name", encoders['model_name'])
+    variant_name = get_encoded_input("Variant Name", encoders['variant_name'])
+    fuel_type = get_encoded_input("Fuel Type", encoders['ft'])
+    body_type = get_encoded_input("Body Type", encoders['bt'])
+
+    # Input kategorikal manual (non-labelencoder)
+    transmission = st.radio("Transmission Type", list(mappings['tt'].keys()))
+    user_type = st.radio("User Type", list(mappings['utype'].keys()))
+
+    # Input numerikal
+    km_driven = st.number_input("Kilometer Driven", value=30000)
+    discount = st.slider("Discount (Rp)", 0, 50_000_000, 0, step=100_000)
     seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
-    
-    # === Prediction Section ===
-    if st.button("Prediksi Harga"):
-        # Prepare input for prediction
+
+    # === Prediction Button ===
+    if st.button("🔮 Prediksi Harga"):
+        # Buat DataFrame input untuk model
         df_input = pd.DataFrame([{
             'state': state,
             'brand_name': brand,
@@ -346,28 +347,19 @@ elif selected_tab == "Price Prediction":
             'variant_name': variant_name,
             'ft': fuel_type,
             'bt': body_type,
-            'tt': mappings['tt'][tt],
-            'utype': mappings['utype'][utype],
-            'log_km': np.log1p(km),
+            'tt': mappings['tt'][transmission],
+            'utype': mappings['utype'][user_type],
+            'log_km': np.log1p(km_driven),
             'discountValue': discount,
             'seating_capacity_new': seating
         }])
-    
-        # Scale the input data
+
+        # Normalisasi input
         X_scaled = scaler.transform(df_input)
-    
-        # Make the prediction
+
+        # Prediksi
         pred_price = rf_model.predict(X_scaled)[0]
-    
-        # Show the result
+
+        # Tampilkan hasil
         st.success(f"💰 Perkiraan harga mobil: Rp {int(pred_price):,}")
-        
-        # Tampilkan kembali nilai asli setelah prediksi
-        st.write(f"State: {state_label}")
-        st.write(f"Brand: {brand_label}")
-        st.write(f"Model: {model_name_label}")
-        st.write(f"Variant: {variant_name_label}")
-        st.write(f"Fuel Type: {fuel_type_label}")
-        st.write(f"Body Type: {body_type_label}")
-        st.write(f"Transmission Type: {tt}")
-        st.write(f"User Type: {utype}")
+
