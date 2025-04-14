@@ -324,6 +324,7 @@ elif selected_tab == "Price Prediction":
     discount = st.slider("Discount (Rp)", 0, 50000000, 0, step=100000)
     seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
 
+
     if st.button("Prediksi Harga"):
         # Masukkan data user ke DataFrame
         df_input = pd.DataFrame([{
@@ -340,9 +341,17 @@ elif selected_tab == "Price Prediction":
             'seating_capacity_new': seating
         }])
 
+
         # Scale fitur numerik
         X_scaled = scaler.transform(df_input)
 
+        # Reverse transform untuk mengembalikan label yang telah di-encode ke nama asli
+        state_label = encoders['state'].inverse_transform([df_input['state'][0]])[0]
+        brand_label = encoders['brand_name'].inverse_transform([df_input['brand_name'][0]])[0]
+        model_label = encoders['model_name'].inverse_transform([df_input['model_name'][0]])[0]
+        variant_label = encoders['variant_name'].inverse_transform([df_input['variant_name'][0]])[0]
+        fuel_type_label = encoders['ft'].inverse_transform([df_input['ft'][0]])[0]
+        body_type_label = encoders['bt'].inverse_transform([df_input['bt'][0]])[0]
         # Prediksi harga
         pred_price = rf_model.predict(X_scaled)[0]
         st.success(f"💰 Perkiraan harga mobil: Rp {int(pred_price):,}")
