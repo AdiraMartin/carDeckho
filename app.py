@@ -309,9 +309,10 @@ elif selected_tab == "Price Prediction":
     encoders = load_from_huggingface(base_url + "encoders.pkl")
     mappings = load_from_huggingface(base_url + "mappings.pkl")
     class_labels = load_from_huggingface(base_url + "class_labels.pkl")  # ⬅️ Use this for dropdown options
-    st.write("Class Labels:", class_labels)
+
     # --- Helper function to encode selected input ---
-    def get_encoded_input(label, class_list, encoder):
+    def get_encoded_input(label, encoder):
+        class_list = list(encoder.classes_)  # ambil semua label
         selected_label = st.selectbox(label, class_list)
         encoded_value = encoder.transform([selected_label])[0]
         return encoded_value
@@ -319,12 +320,12 @@ elif selected_tab == "Price Prediction":
     # --- Input Form ---
     st.subheader("Enter Car Details")
 
-    state = get_encoded_input("State", class_labels['state'], encoders['state'])
-    brand = get_encoded_input("Brand", class_labels['brand_name'], encoders['brand_name'])
-    model_name = get_encoded_input("Model Name", class_labels['model_name'], encoders['model_name'])
-    variant_name = get_encoded_input("Variant Name", class_labels['variant_name'], encoders['variant_name'])
-    fuel_type = get_encoded_input("Fuel Type", class_labels['ft'], encoders['ft'])
-    body_type = get_encoded_input("Body Type", class_labels['bt'], encoders['bt'])
+    state = get_encoded_input("State", encoders['state'])
+    brand = get_encoded_input("Brand", encoders['brand_name'])
+    model_name = get_encoded_input("Model Name", encoders['model_name'])
+    variant_name = get_encoded_input("Variant Name", encoders['variant_name'])
+    fuel_type = get_encoded_input("Fuel Type", encoders['ft'])
+    body_type = get_encoded_input("Body Type", encoders['bt']
 
     transmission = st.radio("Transmission", list(mappings['tt'].keys()))
     user_type = st.radio("User Type", list(mappings['utype'].keys()))
