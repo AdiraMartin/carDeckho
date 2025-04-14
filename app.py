@@ -302,7 +302,7 @@ elif selected_tab == "Price Prediction":
         return joblib.load(io.BytesIO(response.content))
 
     # Link dasar dari model di Hugging Face 
-    base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/"
+    base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/blob/main/"
 
     rf_model = load_from_huggingface(base_url + "rf_model.pkl")
     scaler = load_from_huggingface(base_url + "scaler.pkl")
