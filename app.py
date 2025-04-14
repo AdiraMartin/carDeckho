@@ -300,59 +300,61 @@ elif selected_tab == "Price Prediction":
     def load_from_huggingface(url):
         response = requests.get(url)
         return joblib.load(io.BytesIO(response.content))
-
+    
     # Link dasar dari model di Hugging Face 
     base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/"
-
     rf_model = load_from_huggingface(base_url + "rf_model.pkl")
     scaler = load_from_huggingface(base_url + "scaler.pkl")
     encoders = load_from_huggingface(base_url + "encoders.pkl")
     mappings = load_from_huggingface(base_url + "mappings.pkl")
-
-    # --- Input User ---
+    
+    # === INPUT SECTION ===
     st.subheader("Masukkan Detail Mobil")
-
-    state = st.selectbox("State", encoders['state'].classes_)
-    brand = st.selectbox("Brand", encoders['brand_name'].classes_)
-    model_name = st.selectbox("Model Name", encoders['model_name'].classes_)
-    variant_name = st.selectbox("Variant Name", encoders['variant_name'].classes_)
-    fuel_type = st.selectbox("Fuel Type", encoders['ft'].classes_)
-    body_type = st.selectbox("Body Type", encoders['bt'].classes_)
+    
+    # Helper untuk dropdown dan encoding otomatis
+    def get_user_input(label, encoder):
+        display_value = st.selectbox(label, list(encoder.classes_))
+        return encoder.transform([display_value])[0], display_value
+    
+    state, state_display = get_user_input("State", encoders['state'])
+    brand, brand_display = get_user_input("Brand", encoders['brand_name'])
+    model, model_display = get_user_input("Model Name", encoders['model_name'])
+    variant, variant_display = get_user_input("Variant Name", encoders['variant_name'])
+    fuel, fuel_display = get_user_input("Fuel Type", encoders['ft'])
+    body, body_display = get_user_input("Body Type", encoders['bt'])
+    
+    # Mapping dictionary (non-labelencoder)
     tt = st.radio("Transmission Type", list(mappings['tt'].keys()))
     utype = st.radio("User Type", list(mappings['utype'].keys()))
+    
+    # Numeric inputs
     km = st.number_input("Kilometer Driven", value=30000)
     discount = st.slider("Discount (Rp)", 0, 50000000, 0, step=100000)
     seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
-
-
+    
+    # === PREDIKSI ===
     if st.button("Prediksi Harga"):
-        # Masukkan data user ke DataFrame
+        # Buat DataFrame dari input user
         df_input = pd.DataFrame([{
-            'state': encoders['state'].transform([state])[0],
-            'brand_name': encoders['brand_name'].transform([brand])[0],
-            'model_name': encoders['model_name'].transform([model_name])[0],
-            'variant_name': encoders['variant_name'].transform([variant_name])[0],
-            'ft': encoders['ft'].transform([fuel_type])[0],
-            'bt': encoders['bt'].transform([body_type])[0],
+            'state': state,
+            'brand_name': brand,
+            'model_name': model,
+            'variant_name': variant,
+            'ft': fuel,
+            'bt': body,
             'tt': mappings['tt'][tt],
             'utype': mappings['utype'][utype],
             'log_km': np.log1p(km),
             'discountValue': discount,
             'seating_capacity_new': seating
         }])
-
-
-        # Scale fitur numerik
+    
+        # Scale numeric data
         X_scaled = scaler.transform(df_input)
-
-        # Reverse transform untuk mengembalikan label yang telah di-encode ke nama asli
-        state_label = encoders['state'].inverse_transform([df_input['state'][0]])[0]
-        brand_label = encoders['brand_name'].inverse_transform([df_input['brand_name'][0]])[0]
-        model_label = encoders['model_name'].inverse_transform([df_input['model_name'][0]])[0]
-        variant_label = encoders['variant_name'].inverse_transform([df_input['variant_name'][0]])[0]
-        fuel_type_label = encoders['ft'].inverse_transform([df_input['ft'][0]])[0]
-        body_type_label = encoders['bt'].inverse_transform([df_input['bt'][0]])[0]
+    
         # Prediksi harga
         pred_price = rf_model.predict(X_scaled)[0]
+    
+        # Tampilkan hasil
         st.success(f"💰 Perkiraan harga mobil: Rp {int(pred_price):,}")
-
+    
