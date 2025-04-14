@@ -308,22 +308,21 @@ elif selected_tab == "Price Prediction":
     encoders = load_from_huggingface(base_url + "encoders.pkl")
     mappings = load_from_huggingface(base_url + "mappings.pkl")
     
-    # Helper untuk dropdown dengan label asli tapi hasil encode
-    def dropdown_encode(label, encoder_key):
-        label_list = list(encoders[encoder_key].classes_)
-        selected_label = st.selectbox(label, label_list)
-        encoded = encoders[encoder_key].transform([selected_label])[0]
-        return encoded, selected_label
-    
-    # Masukkan detail mobil
+    def get_encoded_input(label, encoder):
+        label_list = list(encoder.classes_)  # List of labels to show in the dropdown
+        selected_label = st.selectbox(label, label_list)  # Dropdown of labels
+        encoded_value = encoder.transform([selected_label])[0]  # Encoded numeric value for the model
+        return encoded_value, selected_label
+
+    # === Input Section ===
     st.subheader("Masukkan Detail Mobil")
     
-    state, _ = dropdown_encode("State", "state")
-    brand, _ = dropdown_encode("Brand", "brand_name")
-    model_name, _ = dropdown_encode("Model Name", "model_name")
-    variant_name, _ = dropdown_encode("Variant Name", "variant_name")
-    fuel_type, _ = dropdown_encode("Fuel Type", "ft")
-    body_type, _ = dropdown_encode("Body Type", "bt")
+    state, _ = get_encoded_input("State", encoders['state'])
+    brand, _ = get_encoded_input("Brand", encoders['brand_name'])
+    model_name, _ = get_encoded_input("Model Name", encoders['model_name'])
+    variant_name, _ = get_encoded_input("Variant Name", encoders['variant_name'])
+    fuel_type, _ = get_encoded_input("Fuel Type", encoders['ft'])
+    body_type, _ = get_encoded_input("Body Type", encoders['bt'])
     
     tt = st.radio("Transmission Type", list(mappings['tt'].keys()))
     utype = st.radio("User Type", list(mappings['utype'].keys()))
@@ -332,8 +331,9 @@ elif selected_tab == "Price Prediction":
     discount = st.slider("Discount (Rp)", 0, 50000000, 0, step=100000)
     seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
     
-    # Prediksi harga
+    # === Prediction Section ===
     if st.button("Prediksi Harga"):
+        # Prepare input for prediction
         df_input = pd.DataFrame([{
             'state': state,
             'brand_name': brand,
@@ -348,7 +348,11 @@ elif selected_tab == "Price Prediction":
             'seating_capacity_new': seating
         }])
     
+        # Scale the input data
         X_scaled = scaler.transform(df_input)
+    
+        # Make the prediction
         pred_price = rf_model.predict(X_scaled)[0]
     
+        # Show the result
         st.success(f"💰 Perkiraan harga mobil: Rp {int(pred_price):,}")
