@@ -331,8 +331,7 @@ elif selected_tab == "Price Prediction":
     user_type = st.radio("User Type", list(mappings['utype'].keys()))
 
     km_driven = st.number_input("Kilometers Driven", value=30000)
-    discount = st.slider("Discount (Rp)", 0, 50_000_000, 0, step=100_000)
-    seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
+    seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7, 8, 10, 14])
     know_acceleration = st.radio("Do you know the Acceleration of this car?", ["Yes", "No"])
     acceleration_value = 1 if know_acceleration == "Yes" else 0
 
@@ -348,7 +347,6 @@ elif selected_tab == "Price Prediction":
             'tt': mappings['tt'][transmission],
             'utype': mappings['utype'][user_type],
             'log_km': np.log1p(km_driven),
-            'discountValue': discount,
             'seating_capacity_new': seating,
             'Acceleration': acceleration_value
         }])
@@ -356,6 +354,7 @@ elif selected_tab == "Price Prediction":
         # Pastikan urutan kolom & fitur sesuai training
         df_input = df_input.reindex(columns=feature_columns, fill_value=0)
         df_input = df_input.drop(columns=["Acceleration"], errors="ignore")
+        df_input = df_input.drop(columns=["discountValue"], errors="ignore")
     
         try:
             X_scaled = scaler.transform(df_input)
