@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
+import numpy as np
+import joblib
+import requests
+import io
 
 # Set layout to wide
 st.set_page_config(page_title="Car Dashboard", layout="wide")
@@ -289,3 +293,58 @@ elif selected_tab == "Where to Sell?":
     st.markdown("---")
     
     st.write("You can adjust the assumptions (e.g., margin, target sales) to analyze different scenarios.")
+
+elif selected_tab == "Price Prediction":
+    st.title("🚗 Car Price Prediction")
+    @st.cache_resource
+    def load_from_huggingface(url):
+        response = requests.get(url)
+        return joblib.load(io.BytesIO(response.content))
+
+    # Link dasar dari model di Hugging Face 
+    base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model"
+
+    # Load model dan preprocessing tools
+    rf_model = load_from_huggingface(base_url + "rf_model.pkl")
+    scaler = load_from_huggingface(base_url + "scaler.pkl")
+    encoders = load_from_huggingface(base_url + "encoders.pkl")
+    mappings = load_from_huggingface(base_url + "mappings.pkl")
+
+    # --- Input User ---
+    st.subheader("Masukkan Detail Mobil")
+
+    state = st.selectbox("State", encoders['state'].classes_)
+    brand = st.selectbox("Brand", encoders['brand_name'].classes_)
+    model_name = st.selectbox("Model Name", encoders['model_name'].classes_)
+    variant_name = st.selectbox("Variant Name", encoders['variant_name'].classes_)
+    fuel_type = st.selectbox("Fuel Type", encoders['ft'].classes_)
+    body_type = st.selectbox("Body Type", encoders['bt'].classes_)
+    tt = st.radio("Transmission Type", list(mappings['tt'].keys()))
+    utype = st.radio("User Type", list(mappings['utype'].keys()))
+    km = st.number_input("Kilometer Driven", value=30000)
+    discount = st.slider("Discount (Rp)", 0, 50000000, 0, step=100000)
+    seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
+
+    if st.button("Prediksi Harga"):
+        # Masukkan data user ke DataFrame
+        df_input = pd.DataFrame([{
+            'state': encoders['state'].transform([state])[0],
+            'brand_name': encoders['brand_name'].transform([brand])[0],
+            'model_name': encoders['model_name'].transform([model_name])[0],
+            'variant_name': encoders['variant_name'].transform([variant_name])[0],
+            'ft': encoders['ft'].transform([fuel_type])[0],
+            'bt': encoders['bt'].transform([body_type])[0],
+            'tt': mappings['tt'][tt],
+            'utype': mappings['utype'][utype],
+            'log_km': np.log1p(km),
+            'discountValue': discount,
+            'seating_capacity_new': seating
+        }])
+
+        # Scale fitur numerik
+        X_scaled = scaler.transform(df_input)
+
+        # Prediksi harga
+        pred_price = rf_model.predict(X_scaled)[0]
+        st.success(f"💰 Perkiraan harga mobil: Rp {int(pred_price):,}")
+
