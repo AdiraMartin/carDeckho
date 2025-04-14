@@ -302,13 +302,13 @@ elif selected_tab == "Price Prediction":
     def load_from_huggingface(url):
         response = requests.get(url)
         return joblib.load(io.BytesIO(response.content))
-
+    
     base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/"
     rf_model = load_from_huggingface(base_url + "rf_model.pkl")
     scaler = load_from_huggingface(base_url + "scaler.pkl")
     encoders = load_from_huggingface(base_url + "encoders_fixed.pkl")
     mappings = load_from_huggingface(base_url + "mappings.pkl")
-    class_labels = load_from_huggingface(base_url + "class_labels.pkl")  # ⬅️ Use this for dropdown options
+    feature_columns = load_from_huggingface(base_url + "feature_columns.pkl")    # ⬅️ Use this for dropdown options
 
     # --- Helper function to encode selected input ---
     def get_encoded_input(label, encoder):
@@ -349,7 +349,10 @@ elif selected_tab == "Price Prediction":
             'discountValue': discount,
             'seating_capacity_new': seating
         }])
-
+        
+        # Fill any missing features with 0, and reorder columns
+        df_input = df_input.reindex(columns=feature_columns, fill_value=0)
+        
         # Scale and predict
         X_scaled = scaler.transform(df_input)
         predicted_price = rf_model.predict(X_scaled)[0]
