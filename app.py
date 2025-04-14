@@ -333,8 +333,10 @@ elif selected_tab == "Price Prediction":
     km_driven = st.number_input("Kilometers Driven", value=30000)
     discount = st.slider("Discount (Rp)", 0, 50_000_000, 0, step=100_000)
     seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
+    know_acceleration = st.radio("Do you know the Acceleration of this car?", ["Yes", "No"])
+    acceleration_value = 1 if know_acceleration == "Yes" else 0
 
-    # --- Prediction Button ---
+
     if st.button("🔮 Predict Price"):
         df_input = pd.DataFrame([{
             'state': state,
@@ -347,16 +349,13 @@ elif selected_tab == "Price Prediction":
             'utype': mappings['utype'][user_type],
             'log_km': np.log1p(km_driven),
             'discountValue': discount,
-            'seating_capacity_new': seating
+            'seating_capacity_new': seating,
+            'Acceleration': acceleration_value
         }])
-
-        # Pastikan kolom input cocok dengan yang dilatih
+    
+        # Pastikan urutan kolom & fitur sesuai training
         df_input = df_input.reindex(columns=feature_columns, fill_value=0)
-
-        # Debug opsional
-        # st.write("Input columns:", df_input.columns.tolist())
-        # st.write("Expected columns:", feature_columns)
-
+    
         try:
             X_scaled = scaler.transform(df_input)
             predicted_price = rf_model.predict(X_scaled)[0]
