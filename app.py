@@ -325,7 +325,7 @@ elif selected_tab == "Price Prediction":
     model_name = get_encoded_input("Model Name", encoders['model_name'])
     variant_name = get_encoded_input("Variant Name", encoders['variant_name'])
     fuel_type = get_encoded_input("Fuel Type", encoders['ft'])
-    body_type = get_encoded_input("Body Type", encoders['bt']
+    body_type = get_encoded_input("Body Type", encoders['bt'])
 
     transmission = st.radio("Transmission", list(mappings['tt'].keys()))
     user_type = st.radio("User Type", list(mappings['utype'].keys()))
