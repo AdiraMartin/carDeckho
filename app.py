@@ -355,6 +355,7 @@ elif selected_tab == "Price Prediction":
     
         # Pastikan urutan kolom & fitur sesuai training
         df_input = df_input.reindex(columns=feature_columns, fill_value=0)
+        df_input = df_input.drop(columns=["Acceleration"], errors="ignore")
     
         try:
             X_scaled = scaler.transform(df_input)
