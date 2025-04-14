@@ -301,47 +301,46 @@ elif selected_tab == "Price Prediction":
         response = requests.get(url)
         return joblib.load(io.BytesIO(response.content))
     
-    # Link dasar dari model di Hugging Face 
+    # Load model dan encoder dari HuggingFace
     base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/"
     rf_model = load_from_huggingface(base_url + "rf_model.pkl")
     scaler = load_from_huggingface(base_url + "scaler.pkl")
     encoders = load_from_huggingface(base_url + "encoders.pkl")
     mappings = load_from_huggingface(base_url + "mappings.pkl")
     
-    # === INPUT SECTION ===
+    # Helper untuk dropdown dengan label asli tapi hasil encode
+    def dropdown_encode(label, encoder_key):
+        label_list = list(encoders[encoder_key].classes_)
+        selected_label = st.selectbox(label, label_list)
+        encoded = encoders[encoder_key].transform([selected_label])[0]
+        return encoded, selected_label
+    
+    # Masukkan detail mobil
     st.subheader("Masukkan Detail Mobil")
     
-    # Helper untuk dropdown dan encoding otomatis
-    def get_user_input(label, encoder):
-        display_value = st.selectbox(label, list(encoder.classes_))
-        return encoder.transform([display_value])[0], display_value
+    state, _ = dropdown_encode("State", "state")
+    brand, _ = dropdown_encode("Brand", "brand_name")
+    model_name, _ = dropdown_encode("Model Name", "model_name")
+    variant_name, _ = dropdown_encode("Variant Name", "variant_name")
+    fuel_type, _ = dropdown_encode("Fuel Type", "ft")
+    body_type, _ = dropdown_encode("Body Type", "bt")
     
-    state, state_display = get_user_input("State", encoders['state'])
-    brand, brand_display = get_user_input("Brand", encoders['brand_name'])
-    model, model_display = get_user_input("Model Name", encoders['model_name'])
-    variant, variant_display = get_user_input("Variant Name", encoders['variant_name'])
-    fuel, fuel_display = get_user_input("Fuel Type", encoders['ft'])
-    body, body_display = get_user_input("Body Type", encoders['bt'])
-    
-    # Mapping dictionary (non-labelencoder)
     tt = st.radio("Transmission Type", list(mappings['tt'].keys()))
     utype = st.radio("User Type", list(mappings['utype'].keys()))
     
-    # Numeric inputs
     km = st.number_input("Kilometer Driven", value=30000)
     discount = st.slider("Discount (Rp)", 0, 50000000, 0, step=100000)
     seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
     
-    # === PREDIKSI ===
+    # Prediksi harga
     if st.button("Prediksi Harga"):
-        # Buat DataFrame dari input user
         df_input = pd.DataFrame([{
             'state': state,
             'brand_name': brand,
-            'model_name': model,
-            'variant_name': variant,
-            'ft': fuel,
-            'bt': body,
+            'model_name': model_name,
+            'variant_name': variant_name,
+            'ft': fuel_type,
+            'bt': body_type,
             'tt': mappings['tt'][tt],
             'utype': mappings['utype'][utype],
             'log_km': np.log1p(km),
@@ -349,12 +348,7 @@ elif selected_tab == "Price Prediction":
             'seating_capacity_new': seating
         }])
     
-        # Scale numeric data
         X_scaled = scaler.transform(df_input)
-    
-        # Prediksi harga
         pred_price = rf_model.predict(X_scaled)[0]
     
-        # Tampilkan hasil
         st.success(f"💰 Perkiraan harga mobil: Rp {int(pred_price):,}")
-    
