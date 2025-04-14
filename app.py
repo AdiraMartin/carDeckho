@@ -308,11 +308,11 @@ elif selected_tab == "Price Prediction":
     scaler = load_from_huggingface(base_url + "scaler.pkl")
     encoders = load_from_huggingface(base_url + "encoders_fixed.pkl")
     mappings = load_from_huggingface(base_url + "mappings.pkl")
-    feature_columns = load_from_huggingface(base_url + "feature_columns.pkl")    # ⬅️ Use this for dropdown options
+    feature_columns = load_from_huggingface(base_url + "feature_columns.pkl")
 
     # --- Helper function to encode selected input ---
     def get_encoded_input(label, encoder):
-        class_list = list(encoder.classes_)  # ambil semua label
+        class_list = list(encoder.classes_)
         selected_label = st.selectbox(label, class_list)
         encoded_value = encoder.transform([selected_label])[0]
         return encoded_value
@@ -349,12 +349,15 @@ elif selected_tab == "Price Prediction":
             'discountValue': discount,
             'seating_capacity_new': seating
         }])
-        
-        # Fill any missing features with 0, and reorder columns
-        df_input = df_input.reindex(columns=feature_columns, fill_value=0)
-        
-        # Scale and predict
-        X_scaled = scaler.transform(df_input)
-        predicted_price = rf_model.predict(X_scaled)[0]
 
-        st.success(f"💰 Estimated car price: Rp {int(predicted_price):,}")
+        # Reindex to match training columns
+        df_input = df_input.reindex(columns=feature_columns, fill_value=0)
+
+        # Scale and predict with error handling
+        try:
+            X_scaled = scaler.transform(df_input)
+            predicted_price = rf_model.predict(X_scaled)[0]
+            st.success(f"💰 Estimated car price: Rp {int(predicted_price):,}")
+        except Exception as e:
+            st.error(f"Prediction failed. Please check your input. Error: {e}")
+
