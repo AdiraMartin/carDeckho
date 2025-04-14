@@ -350,14 +350,16 @@ elif selected_tab == "Price Prediction":
             'seating_capacity_new': seating
         }])
 
-        # Reindex to match training columns
+        # Pastikan kolom input cocok dengan yang dilatih
         df_input = df_input.reindex(columns=feature_columns, fill_value=0)
 
-        # Scale and predict with error handling
+        # Debug opsional
+        # st.write("Input columns:", df_input.columns.tolist())
+        # st.write("Expected columns:", feature_columns)
+
         try:
             X_scaled = scaler.transform(df_input)
             predicted_price = rf_model.predict(X_scaled)[0]
             st.success(f"💰 Estimated car price: Rp {int(predicted_price):,}")
         except Exception as e:
             st.error(f"Prediction failed. Please check your input. Error: {e}")
-
