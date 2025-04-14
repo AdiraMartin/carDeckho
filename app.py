@@ -309,7 +309,7 @@ elif selected_tab == "Price Prediction":
     encoders = load_from_huggingface(base_url + "encoders.pkl")
     mappings = load_from_huggingface(base_url + "mappings.pkl")
     class_labels = load_from_huggingface(base_url + "class_labels.pkl")  # ⬅️ Use this for dropdown options
-st.write("Class Labels:", class_labels)
+    st.write("Class Labels:", class_labels)
     # --- Helper function to encode selected input ---
     def get_encoded_input(label, class_list, encoder):
         selected_label = st.selectbox(label, class_list)
