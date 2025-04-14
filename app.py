@@ -297,7 +297,7 @@ elif selected_tab == "Where to Sell?":
 elif selected_tab == "Price Prediction":
     st.title("🚗 Car Price Prediction")
 
-    # --- Load resource dari Hugging Face ---
+    # --- Load resources from Hugging Face ---
     @st.cache_resource
     def load_from_huggingface(url):
         response = requests.get(url)
@@ -306,37 +306,35 @@ elif selected_tab == "Price Prediction":
     base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/"
     rf_model = load_from_huggingface(base_url + "rf_model.pkl")
     scaler = load_from_huggingface(base_url + "scaler.pkl")
-    encoders = load_from_huggingface(base_url + "encoders.pkl")   # dict: {'state': list, 'brand_name': list, ...}
-    mappings = load_from_huggingface(base_url + "mappings.pkl")   # dict: {'tt': {'Manual': 0, ...}, ...}
+    encoders = load_from_huggingface(base_url + "encoders.pkl")
+    mappings = load_from_huggingface(base_url + "mappings.pkl")
+    class_labels = load_from_huggingface(base_url + "class_labels.pkl")  # ⬅️ Use this for dropdown options
 
-    # --- Fungsi bantu untuk encode input kategorikal ---
-    def get_encoded_input(label, class_list):
+    # --- Helper function to encode selected input ---
+    def get_encoded_input(label, class_list, encoder):
         selected_label = st.selectbox(label, class_list)
-        encoded_value = class_list.index(selected_label)  # Pakai index langsung
+        encoded_value = encoder.transform([selected_label])[0]
         return encoded_value
 
-    # --- Input form ---
-    st.subheader("Masukkan Detail Mobil")
+    # --- Input Form ---
+    st.subheader("Enter Car Details")
 
-    # Input kategorikal dari list (bukan LabelEncoder object)
-    state = get_encoded_input("State", encoders['state'])
-    brand = get_encoded_input("Brand", encoders['brand_name'])
-    model_name = get_encoded_input("Model Name", encoders['model_name'])
-    variant_name = get_encoded_input("Variant Name", encoders['variant_name'])
-    fuel_type = get_encoded_input("Fuel Type", encoders['ft'])
-    body_type = get_encoded_input("Body Type", encoders['bt'])
+    state = get_encoded_input("State", class_labels['state'], encoders['state'])
+    brand = get_encoded_input("Brand", class_labels['brand_name'], encoders['brand_name'])
+    model_name = get_encoded_input("Model Name", class_labels['model_name'], encoders['model_name'])
+    variant_name = get_encoded_input("Variant Name", class_labels['variant_name'], encoders['variant_name'])
+    fuel_type = get_encoded_input("Fuel Type", class_labels['ft'], encoders['ft'])
+    body_type = get_encoded_input("Body Type", class_labels['bt'], encoders['bt'])
 
-    # Input mapping manual (pakai dictionary mapping)
-    transmission = st.radio("Transmission Type", list(mappings['tt'].keys()))
+    transmission = st.radio("Transmission", list(mappings['tt'].keys()))
     user_type = st.radio("User Type", list(mappings['utype'].keys()))
 
-    # Input numerikal
-    km_driven = st.number_input("Kilometer Driven", value=30000)
+    km_driven = st.number_input("Kilometers Driven", value=30000)
     discount = st.slider("Discount (Rp)", 0, 50_000_000, 0, step=100_000)
     seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
 
-    # --- Prediksi ---
-    if st.button("🔮 Prediksi Harga"):
+    # --- Prediction Button ---
+    if st.button("🔮 Predict Price"):
         df_input = pd.DataFrame([{
             'state': state,
             'brand_name': brand,
@@ -351,10 +349,8 @@ elif selected_tab == "Price Prediction":
             'seating_capacity_new': seating
         }])
 
-        # Normalisasi dan prediksi
+        # Scale and predict
         X_scaled = scaler.transform(df_input)
-        pred_price = rf_model.predict(X_scaled)[0]
+        predicted_price = rf_model.predict(X_scaled)[0]
 
-        st.success(f"💰 Perkiraan harga mobil: Rp {int(pred_price):,}")
-
-
+        st.success(f"💰 Estimated car price: Rp {int(predicted_price):,}")
