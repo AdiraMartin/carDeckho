@@ -4,6 +4,6 @@ numpy
 plotly
 altair
 matplotlib
-joblib
-requests
+joblib==1.4.2
+requests==2.32.3
 
