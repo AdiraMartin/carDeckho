@@ -296,13 +296,13 @@ elif selected_tab == "Where to Sell?":
 
 elif selected_tab == "Price Prediction":
     st.title("🚗 Car Price Prediction")
-    
+
     # --- Load resources from Hugging Face ---
     @st.cache_resource
     def load_from_huggingface(url):
         response = requests.get(url)
         return joblib.load(io.BytesIO(response.content))
-    
+
     base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/"
     rf_model = load_from_huggingface(base_url + "rf_model.pkl")
     scaler = load_from_huggingface(base_url + "scaler.pkl")
@@ -331,11 +331,9 @@ elif selected_tab == "Price Prediction":
     user_type = st.radio("User Type", list(mappings['utype'].keys()))
 
     km_driven = st.number_input("Kilometers Driven", value=30000)
-    seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7, 8, 10, 14])
-    know_acceleration = st.radio("Do you know the Acceleration of this car?", ["Yes", "No"])
-    acceleration_value = 1 if know_acceleration == "Yes" else 0
+    seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
 
-
+    # --- Prediction Button ---
     if st.button("🔮 Predict Price"):
         df_input = pd.DataFrame([{
             'state': state,
@@ -347,18 +345,17 @@ elif selected_tab == "Price Prediction":
             'tt': mappings['tt'][transmission],
             'utype': mappings['utype'][user_type],
             'log_km': np.log1p(km_driven),
-            'seating_capacity_new': seating,
-            'Acceleration': acceleration_value
+            'discountValue': 0,
+            'seating_capacity_new': seating
         }])
-    
-        # Pastikan urutan kolom & fitur sesuai training
+
+        # Ensure feature alignment
         df_input = df_input.reindex(columns=feature_columns, fill_value=0)
         df_input = df_input.drop(columns=["Acceleration"], errors="ignore")
-        df_input = df_input.drop(columns=["discountValue"], errors="ignore")
-    
+
         try:
             X_scaled = scaler.transform(df_input)
             predicted_price = rf_model.predict(X_scaled)[0]
-            st.success(f"💰 Estimated car price: Rp {int(predicted_price):,}")
+            st.success(f"💰 Estimated car price: ₹ {int(predicted_price):,}")
         except Exception as e:
             st.error(f"Prediction failed. Please check your input. Error: {e}")
