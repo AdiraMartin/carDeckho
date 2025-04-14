@@ -296,7 +296,7 @@ elif selected_tab == "Where to Sell?":
 
 elif selected_tab == "Price Prediction":
     st.title("🚗 Car Price Prediction")
-
+    
     # --- Load resources from Hugging Face ---
     @st.cache_resource
     def load_from_huggingface(url):
@@ -309,7 +309,7 @@ elif selected_tab == "Price Prediction":
     encoders = load_from_huggingface(base_url + "encoders.pkl")
     mappings = load_from_huggingface(base_url + "mappings.pkl")
     class_labels = load_from_huggingface(base_url + "class_labels.pkl")  # ⬅️ Use this for dropdown options
-
+    st.write("State encoder classes:", encoders['state'].classes_)
     # --- Helper function to encode selected input ---
     def get_encoded_input(label, encoder):
         class_list = list(encoder.classes_)  # ambil semua label
