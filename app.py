@@ -35,6 +35,7 @@ if selected_tab == "Inside Data":
     with col_left:
         location_filter = st.selectbox("Select Location Category", ["All"] + list(df["location_categories"].unique()))
         state_filter = st.selectbox("Select State", ["All"] + list(df["state"].unique()))
+        model_filter = st.selectbox("Select State", ["All"] + list(df["model_name"].unique()))
         bt_filter = st.selectbox("Select Body Type", ["All"] + list(df["bt"].unique()))
 
     # Right column filters
