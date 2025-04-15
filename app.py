@@ -17,6 +17,8 @@ def load_data():
 
 df = load_data()
 
+df['price in rupias'] = df['pu']* 194.15
+
 # Sidebar
 st.sidebar.title("Navigation")
 selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Price Prediction"])
@@ -40,7 +42,7 @@ if selected_tab == "Inside Data":
     # Right column filters
     with col_right:
         # Price range slider (pu column)
-        price_filter = st.slider("Price", 0, int(df["pu"].max()), (0, int(df["pu"].max())))
+        price_filter = st.slider("Price", 0, int(df["price in rupias"].max()), (0, int(df["price in rupias"].max())))
         discount_filter = st.slider("Discount Range", 0, int(df["discountValue"].max()), (0, int(df["discountValue"].max())))
         km_filter = st.slider("KM Driven", int(df["km"].min()), int(df["km"].max()), (int(df["km"].min()), int(df["km"].max())))
 
@@ -55,7 +57,7 @@ if selected_tab == "Inside Data":
             ((df["state"] == state_filter) | (state_filter == "All")) &
             ((df["model_name"] == model_filter) | (model_filter == "All")) &  # Apply model filter
             ((df["bt"] == bt_filter) | (bt_filter == "All")) &
-            (df["pu"] >= price_filter[0] * 100000) & (df["pu"] <= price_filter[1] * 100000) &  # Convert to Lakh
+            (df["price in rupias"] >= price_filter[0] * 100000) & (df["price in rupias"] <= price_filter[1] * 100000) &  # Convert to Lakh
             (df["discountValue"] >= discount_filter[0]) & (df["discountValue"] <= discount_filter[1]) &
             (df["km"] >= km_filter[0]) & (df["km"] <= km_filter[1])
         ]
@@ -75,7 +77,7 @@ if selected_tab == "Inside Data":
             st.metric(label="Average Age", value=f"{avg_age:.1f} years")
 
         with col4:
-            avg_price = filtered_df["pu"].mean()
+            avg_price = filtered_df["price in rupias"].mean()
             st.metric(label="Average Price", value=f"₹{avg_price:,.0f}")
 
         with col5:
@@ -217,7 +219,7 @@ elif selected_tab == "Where to Sell?":
     # Get the most common states and the average price for each state
     state_counts = df.groupby("state").agg(
         number_of_cars=("state", "count"),
-        average_price=("pu", "mean"),
+        average_price=("price in rupias", "mean"),
         average_discount=("discountValue", "mean")  # Calculate average discount per state
     ).reset_index()
     state_counts.columns = ["State", "Number of Cars", "Average Price", "Average Discount"]
@@ -227,7 +229,7 @@ elif selected_tab == "Where to Sell?":
         df_filtered = df[df["price_segment"] == price_segment_filter]
         state_counts_filtered = df_filtered.groupby("state").agg(
             number_of_cars=("state", "count"),
-            average_price=("pu", "mean"),
+            average_price=("price in rupias", "mean"),
             average_discount=("discountValue", "mean")
         ).reset_index()
         state_counts_filtered.columns = ["State", "Number of Cars", "Average Price", "Average Discount"]
