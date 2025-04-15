@@ -21,7 +21,6 @@ df = load_data()
 st.sidebar.title("Navigation")
 selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Price Prediction"])
 
-# Inside Data
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
 
@@ -35,7 +34,7 @@ if selected_tab == "Inside Data":
     with col_left:
         location_filter = st.selectbox("Select Location Category", ["All"] + list(df["location_categories"].unique()))
         state_filter = st.selectbox("Select State", ["All"] + list(df["state"].unique()))
-        model_filter = st.selectbox("Select State", ["All"] + list(df["model_name"].unique()))
+        model_filter = st.selectbox("Select Model", ["All"] + list(df["model_name"].unique()))  # Updated filter
         bt_filter = st.selectbox("Select Body Type", ["All"] + list(df["bt"].unique()))
 
     # Right column filters
@@ -54,6 +53,7 @@ if selected_tab == "Inside Data":
         filtered_df = df[
             ((df["location_categories"] == location_filter) | (location_filter == "All")) &
             ((df["state"] == state_filter) | (state_filter == "All")) &
+            ((df["model_name"] == model_filter) | (model_filter == "All")) &  # Apply model filter
             ((df["bt"] == bt_filter) | (bt_filter == "All")) &
             (df["pu"] >= price_filter[0] * 100000) & (df["pu"] <= price_filter[1] * 100000) &  # Convert to Lakh
             (df["discountValue"] >= discount_filter[0]) & (df["discountValue"] <= discount_filter[1]) &
@@ -174,7 +174,7 @@ if selected_tab == "Inside Data":
         st.subheader("🚗 Top 30 Models by Views")
         
         # Calculate count of models, sort by views, and display top 30
-        model_counts = filtered_df.groupby("model").agg(
+        model_counts = filtered_df.groupby("model_name").agg(  # Updated column name
             total_views=("views", "sum")
         ).reset_index()
         
@@ -182,15 +182,15 @@ if selected_tab == "Inside Data":
 
         # Highlight the top 5 models with a different color
         top_5_models = model_counts.head(5)
-        model_counts["color"] = model_counts["model"].apply(
-            lambda x: "Top 5" if x in top_5_models["model"].values else "Other"
+        model_counts["color"] = model_counts["model_name"].apply(  # Updated column name
+            lambda x: "Top 5" if x in top_5_models["model_name"].values else "Other"
         )
 
         chart_model = alt.Chart(model_counts).mark_bar().encode(
-            x=alt.X("model", sort='-y', title="Model"),
+            x=alt.X("model_name", sort='-y', title="Model"),  # Updated column name
             y=alt.Y("total_views", title="Total Views"),
             color=alt.Color("color", scale=alt.Scale(domain=["Top 5", "Other"], range=["#FF5733", "#1F77B4"])),
-            tooltip=["model", "total_views"]
+            tooltip=["model_name", "total_views"]  # Updated column name
         ).properties(
             width=800,  # Wider chart
             height=400
@@ -201,7 +201,6 @@ if selected_tab == "Inside Data":
         st.markdown("---")
         st.subheader("Full Dataset")
         st.dataframe(filtered_df)
-
 
 # Inside Where to Sell tab
 elif selected_tab == "Where to Sell?":
