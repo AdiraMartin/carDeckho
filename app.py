@@ -297,86 +297,86 @@ elif selected_tab == "Where to Sell?":
     st.write("You can adjust the assumptions (e.g., margin, target sales) to analyze different scenarios.")
 
 elif selected_tab == "Price Prediction":
-    st.title("🚗 Car Price Prediction")
-
-    # --- Load Hugging Face Resources ---
-    @st.cache_resource
-    def load_from_huggingface(url):
-        response = requests.get(url)
-        return joblib.load(io.BytesIO(response.content))
-
-    base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/"
-
-    # Select year
-    selected_year = st.selectbox("Select Prediction Year", [2024, 2023])
-
-    if selected_year == 2024:
-        rf_model = load_from_huggingface(base_url + "rf_model_2024.pkl")
-        scaler = load_from_huggingface(base_url + "scaler_2024.pkl")
-        feature_columns = load_from_huggingface(base_url + "feature_columns_2024.pkl")
-    else:
-        rf_model = load_from_huggingface(base_url + "rf_model_2023.pkl")
-        scaler = load_from_huggingface(base_url + "scaler_2023.pkl")
-        feature_columns = load_from_huggingface(base_url + "feature_columns_2023.pkl")
-
-    encoders = load_from_huggingface(base_url + "encoders.pkl")
-    mappings = load_from_huggingface(base_url + "mappings.pkl")
-
-    # --- Helper function for encoding ---
-    def get_encoded_input(label, encoder):
-        class_list = list(encoder.classes_)
-        selected_label = st.selectbox(label, class_list)
-        encoded_value = encoder.transform([selected_label])[0]
-        return encoded_value
-
-    # --- User Input ---
-    st.subheader("Enter Car Details")
-
-    state = get_encoded_input("State", encoders['state'])
-    brand = get_encoded_input("Brand", encoders['brand_name'])
-    model_name = get_encoded_input("Model Name", encoders['model_name'])
-    variant_name = get_encoded_input("Variant Name", encoders['variant_name'])
-    fuel_type = get_encoded_input("Fuel Type", encoders['ft'])
-    body_type = get_encoded_input("Body Type", encoders['bt'])
-
-    transmission = st.radio("Transmission", list(mappings['tt'].keys()))
-    user_type = st.radio("User Type", list(mappings['utype'].keys()))
-    km_driven = st.number_input("Kilometers Driven", value=30000)
-    seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
-    myear = st.number_input("Manufacturing Year", min_value=2000, max_value=2025, value=2019)
-
-    # --- Predict Button ---
-    if st.button("🔮 Predict Price"):
-        age = selected_year - myear
-        df_input = pd.DataFrame([{
-            'state': state,
-            'brand_name': brand,
-            'model_name': model_name,
-            'variant_name': variant_name,
-            'ft': fuel_type,
-            'bt': body_type,
-            'tt': mappings['tt'][transmission],
-            'utype': mappings['utype'][user_type],
-            'log_km': np.log1p(km_driven),
-            'seating_capacity_new': seating,
-            'myear': myear,
-            'top_features_count': 0,  # Default if not used
-            'has_acceleration': 1,    # Assume yes if not known
-            f'age_{selected_year}': age
-        }])
-
-        # Pastikan semua kolom match
-        df_input = df_input.reindex(columns=feature_columns, fill_value=0)
-
-        try:
-            X_scaled = scaler.transform(df_input)
-            predicted_price = rf_model.predict(X_scaled)[0]
-            lower = predicted_price * 0.9
-            upper = predicted_price * 1.1
-
-            st.success(f"💰 Estimated car price: ₹ {int(predicted_price):,}")
-            st.write(f"📉 Lower Bound: ₹ {int(lower):,}")
-            st.write(f"📈 Upper Bound: ₹ {int(upper):,}")
-
-        except Exception as e:
-            st.error(f"Prediction failed. Please check your input. Error: {e}")
+        st.title("🚗 Car Price Prediction")
+    
+        # --- Load Hugging Face Resources ---
+        @st.cache_resource
+        def load_from_huggingface(url):
+            response = requests.get(url)
+            return joblib.load(io.BytesIO(response.content))
+    
+        base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/"
+    
+        # Select year
+        selected_year = st.selectbox("Select Prediction Year", [2024, 2023])
+    
+        if selected_year == 2024:
+            rf_model = load_from_huggingface(base_url + "rf_model_2024.pkl")
+            scaler = load_from_huggingface(base_url + "scaler_2024.pkl")
+            feature_columns = load_from_huggingface(base_url + "feature_columns_2024.pkl")
+        else:
+            rf_model = load_from_huggingface(base_url + "rf_model_2023.pkl")
+            scaler = load_from_huggingface(base_url + "scaler_2023.pkl")
+            feature_columns = load_from_huggingface(base_url + "feature_columns_2023.pkl")
+    
+        encoders = load_from_huggingface(base_url + "encoders.pkl")
+        mappings = load_from_huggingface(base_url + "mappings.pkl")
+    
+        # --- Helper function for encoding ---
+        def get_encoded_input(label, encoder):
+            class_list = list(encoder.classes_)
+            selected_label = st.selectbox(label, class_list)
+            encoded_value = encoder.transform([selected_label])[0]
+            return encoded_value
+    
+        # --- User Input ---
+        st.subheader("Enter Car Details")
+    
+        state = get_encoded_input("State", encoders['state'])
+        brand = get_encoded_input("Brand", encoders['brand_name'])
+        model_name = get_encoded_input("Model Name", encoders['model_name'])
+        variant_name = get_encoded_input("Variant Name", encoders['variant_name'])
+        fuel_type = get_encoded_input("Fuel Type", encoders['ft'])
+        body_type = get_encoded_input("Body Type", encoders['bt'])
+    
+        transmission = st.radio("Transmission", list(mappings['tt'].keys()))
+        user_type = st.radio("User Type", list(mappings['utype'].keys()))
+        km_driven = st.number_input("Kilometers Driven", value=30000)
+        seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
+        myear = st.number_input("Manufacturing Year", min_value=2000, max_value=2025, value=2019)
+    
+        # --- Predict Button ---
+        if st.button("🔮 Predict Price"):
+            age = selected_year - myear
+            df_input = pd.DataFrame([{
+                'state': state,
+                'brand_name': brand,
+                'model_name': model_name,
+                'variant_name': variant_name,
+                'ft': fuel_type,
+                'bt': body_type,
+                'tt': mappings['tt'][transmission],
+                'utype': mappings['utype'][user_type],
+                'log_km': np.log1p(km_driven),
+                'seating_capacity_new': seating,
+                'myear': myear,
+                'top_features_count': 0,  # Default if not used
+                'has_acceleration': 1,    # Assume yes if not known
+                f'age_{selected_year}': age
+            }])
+    
+            # Pastikan semua kolom match
+            df_input = df_input.reindex(columns=feature_columns, fill_value=0)
+    
+            try:
+                X_scaled = scaler.transform(df_input)
+                predicted_price = rf_model.predict(X_scaled)[0]
+                lower = predicted_price * 0.9
+                upper = predicted_price * 1.1
+    
+                st.success(f"💰 Estimated car price: ₹ {int(predicted_price):,}")
+                st.write(f"📉 Lower Bound: ₹ {int(lower):,}")
+                st.write(f"📈 Upper Bound: ₹ {int(upper):,}")
+    
+            except Exception as e:
+                st.error(f"Prediction failed. Please check your input. Error: {e}")
