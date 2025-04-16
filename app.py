@@ -333,16 +333,13 @@ elif selected_tab == "Price Prediction":
         st.subheader("Enter Car Details")
     
         state = get_encoded_input("State", encoders['state'])
-        brand = get_encoded_input("Brand", encoders['brand_name'])
         model_name = get_encoded_input("Model Name", encoders['model_name'])
         variant_name = get_encoded_input("Variant Name", encoders['variant_name'])
-        fuel_type = get_encoded_input("Fuel Type", encoders['ft'])
-        body_type = get_encoded_input("Body Type", encoders['bt'])
+
     
-        transmission = st.radio("Transmission", list(mappings['tt'].keys()))
         user_type = st.radio("User Type", list(mappings['utype'].keys()))
         km_driven = st.number_input("Kilometers Driven", value=30000)
-        seating = st.selectbox("Seating Capacity", [2, 4, 5, 6, 7])
+
         myear = st.number_input("Manufacturing Year", min_value=2000, max_value=2025, value=2019)
     
         # --- Predict Button ---
