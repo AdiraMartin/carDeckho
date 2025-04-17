@@ -24,7 +24,6 @@ selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Pric
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
 
-
     # ==== Predicted Year Filter ====
     predicted_year = st.selectbox("Select Predicted Year", ["2023", "2024"])
 
