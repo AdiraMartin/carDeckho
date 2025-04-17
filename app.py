@@ -43,13 +43,12 @@ if selected_tab == "Inside Data":
     col_left, col_right = st.columns(2)
 
     with col_left:
-        location_filter = st.selectbox("Select Location Category", ["All"] + list(df["location_categories"].dropna().unique()))
         state_filter = st.selectbox("Select State", ["All"] + list(df["state"].dropna().unique()))
         model_filter = st.selectbox("Select Model", ["All"] + list(df["model_name"].dropna().unique()))
         bt_filter = st.selectbox("Select Body Type", ["All"] + list(df["bt"].dropna().unique()))
 
     with col_right:
-        price_filter = st.slider("Price", 0, int(df["price in rupias"].max()), (0, int(df["price in rupias"].max())))
+        price_filter = st.slider("Price", 0, int(df["pu"].max()), (0, int(df["pu"].max())))
         discount_filter = st.slider("Discount Range", 0, int(df["discountValue"].max()), (0, int(df["discountValue"].max())))
         km_filter = st.slider("KM Driven", int(df["km"].min()), int(df["km"].max()), (int(df["km"].min()), int(df["km"].max())))
 
