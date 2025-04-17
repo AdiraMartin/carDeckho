@@ -7,17 +7,20 @@ import requests
 # Set layout to wide
 st.set_page_config(page_title="Car Dashboard", layout="wide")
 
+# === Load Data from HuggingFace and Cache it ===
 @st.cache_data
-
-base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/"
-df = load_from_huggingface(base_url + "df_market_with_predictions.csv")
+def load_data():
+    base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/df_market_with_predictions.csv"
+    df = pd.read_csv(base_url)
+    return df
 
 df = load_data()
 
-# Sidebar
+# === Sidebar Navigation ===
 st.sidebar.title("Navigation")
 selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Price Prediction"])
 
+# === Inside Data Tab ===
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
 
@@ -40,10 +43,10 @@ if selected_tab == "Inside Data":
     col_left, col_right = st.columns(2)
 
     with col_left:
-        location_filter = st.selectbox("Select Location Category", ["All"] + list(df["location_categories"].unique()))
-        state_filter = st.selectbox("Select State", ["All"] + list(df["state"].unique()))
-        model_filter = st.selectbox("Select Model", ["All"] + list(df["model_name"].unique()))
-        bt_filter = st.selectbox("Select Body Type", ["All"] + list(df["bt"].unique()))
+        location_filter = st.selectbox("Select Location Category", ["All"] + list(df["location_categories"].dropna().unique()))
+        state_filter = st.selectbox("Select State", ["All"] + list(df["state"].dropna().unique()))
+        model_filter = st.selectbox("Select Model", ["All"] + list(df["model_name"].dropna().unique()))
+        bt_filter = st.selectbox("Select Body Type", ["All"] + list(df["bt"].dropna().unique()))
 
     with col_right:
         price_filter = st.slider("Price", 0, int(df["price in rupias"].max()), (0, int(df["price in rupias"].max())))
@@ -143,7 +146,7 @@ if selected_tab == "Inside Data":
         ).properties(width=800, height=400)
         st.altair_chart(chart_model, use_container_width=True)
 
-        # === New Chart: Predicted Price + Confidence Bounds ===
+        # === Chart: Predicted Price & Confidence Band ===
         st.markdown("---")
         st.subheader(f"📉 Predicted Price & Confidence Band ({predicted_year})")
 
