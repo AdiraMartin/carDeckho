@@ -28,12 +28,12 @@ if selected_tab == "Inside Data":
     predicted_year = st.selectbox("Select Predicted Year", ["2023", "2024"])
 
     if predicted_year == "2023":
-        df["predicted_price"] = df["predicted_price_2023"]
+        df["predicted_price"] = df["predicted_pu_2023"]
         df["lower_bound"] = df["lower_bound_2023"]
         df["upper_bound"] = df["upper_bound_2023"]
         df["age"] = df["age_2023"]
     else:
-        df["predicted_price"] = df["predicted_price_2024"]
+        df["predicted_price"] = df["predicted_pu_2024"]
         df["lower_bound"] = df["lower_bound_2024"]
         df["upper_bound"] = df["upper_bound_2024"]
         df["age"] = df["age_2024"]
