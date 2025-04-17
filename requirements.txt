@@ -7,3 +7,4 @@ matplotlib
 joblib==1.4.2
 requests==2.32.3
 scikit-learn==1.6.1
+gdown
