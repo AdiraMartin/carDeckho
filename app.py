@@ -24,6 +24,7 @@ def load_data():
     else:
         print("Failed to download file")
         return None
+df = load_data()
 
 # Sidebar
 st.sidebar.title("Navigation")
