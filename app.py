@@ -15,6 +15,7 @@ def load_data():
     return df
 
 df = load_data()
+st.write("Kolom yang tersedia:", df.columns.tolist())
 
 # === Sidebar Navigation ===
 st.sidebar.title("Navigation")
@@ -23,7 +24,7 @@ selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Pric
 # === Inside Data Tab ===
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
-st.write("Kolom yang tersedia:", df.columns.tolist())
+
 
     # ==== Predicted Year Filter ====
     predicted_year = st.selectbox("Select Predicted Year", ["2023", "2024"])
