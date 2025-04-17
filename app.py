@@ -31,10 +31,10 @@ st.sidebar.title("Navigation")
 selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Price Prediction"])
 
 if selected_tab == "Inside Data":
-    st.title("🔍 Inside Data")
-    st.write(df.columns.tolist())
-    # ==== Predicted Year Filter ====
-    predicted_year = st.selectbox("Select Predicted Year", ["2023", "2024"])
+        st.title("🔍 Inside Data")
+        st.write(df.columns.tolist())
+        # ==== Predicted Year Filter ====
+        predicted_year = st.selectbox("Select Predicted Year", ["2023", "2024"])
 
     if predicted_year == "2023":
         df["predicted_price"] = df["predicted_pu_2023"]
