@@ -10,7 +10,7 @@ st.set_page_config(page_title="Car Dashboard", layout="wide")
 # === Load Data from HuggingFace and Cache it ===
 @st.cache_data
 def load_data():
-    base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/df_market_with_predictions_2.csv"
+    base_url = "https://huggingface.co/AdiraMartin/cardekho-price-model/resolve/main/df_market_with_predictions.csv"
     df = pd.read_csv(base_url)
     return df
 
