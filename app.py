@@ -2,9 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import numpy as np
-import joblib
 import requests
-import io
 
 # Set layout to wide
 st.set_page_config(page_title="Car Dashboard", layout="wide")
@@ -14,7 +12,7 @@ def load_data():
     file_id = "1X-Id3JZELUMNaqPKqwEY1GNcfbCr6FP9"
     url = f"https://drive.google.com/uc?id={file_id}&export=download"
     response = requests.get(url, stream=True)
-    
+
     if response.status_code == 200:
         with open("df_market_with_predictions.csv", "wb") as f:
             for chunk in response.iter_content(chunk_size=1024):
@@ -24,6 +22,7 @@ def load_data():
     else:
         print("Failed to download file")
         return None
+
 df = load_data()
 
 # Sidebar
@@ -31,10 +30,11 @@ st.sidebar.title("Navigation")
 selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Price Prediction"])
 
 if selected_tab == "Inside Data":
-        st.title("🔍 Inside Data")
-        st.write(df.columns.tolist())
-        # ==== Predicted Year Filter ====
-        predicted_year = st.selectbox("Select Predicted Year", ["2023", "2024"])
+    st.title("🔍 Inside Data")
+    st.write(df.columns.tolist())
+
+    # ==== Predicted Year Filter ====
+    predicted_year = st.selectbox("Select Predicted Year", ["2023", "2024"])
 
     if predicted_year == "2023":
         df["predicted_price"] = df["predicted_pu_2023"]
@@ -70,7 +70,7 @@ if selected_tab == "Inside Data":
             ((df["state"] == state_filter) | (state_filter == "All")) &
             ((df["model_name"] == model_filter) | (model_filter == "All")) &
             ((df["bt"] == bt_filter) | (bt_filter == "All")) &
-            (df["price in rupias"] >= price_filter[0] * 100000) & (df["price in rupias"] <= price_filter[1] * 100000) &
+            (df["price in rupias"] >= price_filter[0]) & (df["price in rupias"] <= price_filter[1]) &
             (df["discountValue"] >= discount_filter[0]) & (df["discountValue"] <= discount_filter[1]) &
             (df["km"] >= km_filter[0]) & (df["km"] <= km_filter[1])
         ]
@@ -178,7 +178,6 @@ if selected_tab == "Inside Data":
                 title="Price Type"),
             tooltip=["model_name", "Type", alt.Tooltip("Price", format=",.0f")]
         ).properties(width=800, height=400)
-
         st.altair_chart(line_chart, use_container_width=True)
 
         # === Data Table ===
