@@ -5,17 +5,24 @@ import numpy as np
 import joblib
 import requests
 import io
+import gdown
 
 # Set layout to wide
 st.set_page_config(page_title="Car Dashboard", layout="wide")
 
 @st.cache_data
+import gdown
 def load_data():
     file_id = "1X-Id3JZELUMNaqPKqwEY1GNcfbCr6FP9"
-    url = f"https://drive.google.com/uc?id={file_id}"
-    return pd.read_csv(url)
-
-df = load_data()
+    output_file = "df_market_with_predictions.csv"
+    
+    # Cek kalau file belum ada, baru download
+    if not os.path.exists(output_file):
+        url = f"https://drive.google.com/uc?id={file_id}"
+        gdown.download(url, output_file, quiet=False)
+    
+    # Load CSV
+    return pd.read_csv(output_file)
 
 # Sidebar
 st.sidebar.title("Navigation")
