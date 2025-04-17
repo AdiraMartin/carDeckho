@@ -10,6 +10,21 @@ import io
 st.set_page_config(page_title="Car Dashboard", layout="wide")
 
 @st.cache_data
+def load_data():
+    file_id = "1X-Id3JZELUMNaqPKqwEY1GNcfbCr6FP9"
+    url = f"https://drive.google.com/uc?id={file_id}"
+    return pd.read_csv(url)
+
+df = load_data()
+
+# Sidebar
+st.sidebar.title("Navigation")
+selected_tab = st.sidebar.radio("Go to", ["Inside Data", "Where to Sell?", "Price Prediction"])
+
+if selected_tab == "Inside Data":
+    st.title("🔍 Inside Data")
+
+
 if selected_tab == "Inside Data":
     st.title("🔍 Inside Data")
 
