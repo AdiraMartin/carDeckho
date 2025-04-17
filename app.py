@@ -5,7 +5,6 @@ import numpy as np
 import joblib
 import requests
 import io
-import gdown
 
 # Set layout to wide
 st.set_page_config(page_title="Car Dashboard", layout="wide")
