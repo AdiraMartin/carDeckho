@@ -10,18 +10,20 @@ import io
 st.set_page_config(page_title="Car Dashboard", layout="wide")
 
 @st.cache_data
-import gdown
 def load_data():
     file_id = "1X-Id3JZELUMNaqPKqwEY1GNcfbCr6FP9"
-    output_file = "df_market_with_predictions.csv"
+    url = f"https://drive.google.com/uc?id={file_id}&export=download"
+    response = requests.get(url, stream=True)
     
-    # Cek kalau file belum ada, baru download
-    if not os.path.exists(output_file):
-        url = f"https://drive.google.com/uc?id={file_id}"
-        gdown.download(url, output_file, quiet=False)
-    
-    # Load CSV
-    return pd.read_csv(output_file)
+    if response.status_code == 200:
+        with open("df_market_with_predictions.csv", "wb") as f:
+            for chunk in response.iter_content(chunk_size=1024):
+                if chunk:
+                    f.write(chunk)
+        return pd.read_csv("df_market_with_predictions.csv")
+    else:
+        print("Failed to download file")
+        return None
 
 # Sidebar
 st.sidebar.title("Navigation")
