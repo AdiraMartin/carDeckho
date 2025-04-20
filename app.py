@@ -61,7 +61,6 @@ if selected_tab == "Inside Data":
             ((df["state"] == state_filter) | (state_filter == "All")) &
             ((df["model_name"] == model_filter) | (model_filter == "All")) &
             ((df["bt"] == bt_filter) | (bt_filter == "All")) &
-            (df["price in rupias"] >= price_filter[0]) & (df["price in rupias"] <= price_filter[1]) &
             (df["discountValue"] >= discount_filter[0]) & (df["discountValue"] <= discount_filter[1]) &
             (df["km"] >= km_filter[0]) & (df["km"] <= km_filter[1])
         ]
