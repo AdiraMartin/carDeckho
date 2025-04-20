@@ -4,6 +4,7 @@ import altair as alt
 import numpy as np
 import requests
 import joblib
+import io
 
 # Set layout to wide
 st.set_page_config(page_title="Car Dashboard", layout="wide")
