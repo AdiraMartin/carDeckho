@@ -70,7 +70,7 @@ if selected_tab == "Inside Data":
         with col1: st.metric(label="Total Data", value=len(filtered_df))
         with col2: st.metric(label="Average KM", value=f"{filtered_df['km'].mean():,.0f} KM")
         with col3: st.metric(label="Average Age", value=f"{filtered_df['age'].mean():.1f} years")
-        with col4: st.metric(label="Average Price", value=f"₹{filtered_df['price in rupias'].mean():,.0f}")
+        with col4: st.metric(label="Average Price", value=f"₹{filtered_df['pu'].mean():,.0f}")
         with col5: st.metric(label="Average Discount", value=f"₹{filtered_df['discountValue'].mean():,.0f}")
 
         st.markdown("---")
@@ -190,7 +190,7 @@ elif selected_tab == "Where to Sell?":
     # Get the most common states and the average price for each state
     state_counts = df.groupby("state").agg(
         number_of_cars=("state", "count"),
-        average_price=("price in rupias", "mean"),
+        average_price=("pu", "mean"),
         average_discount=("discountValue", "mean")  # Calculate average discount per state
     ).reset_index()
     state_counts.columns = ["State", "Number of Cars", "Average Price", "Average Discount"]
@@ -200,7 +200,7 @@ elif selected_tab == "Where to Sell?":
         df_filtered = df[df["price_segment"] == price_segment_filter]
         state_counts_filtered = df_filtered.groupby("state").agg(
             number_of_cars=("state", "count"),
-            average_price=("price in rupias", "mean"),
+            average_price=("pu", "mean"),
             average_discount=("discountValue", "mean")
         ).reset_index()
         state_counts_filtered.columns = ["State", "Number of Cars", "Average Price", "Average Discount"]
