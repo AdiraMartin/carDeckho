@@ -145,29 +145,36 @@ if selected_tab == "Inside Data":
         ).properties(width=800, height=400)
         st.altair_chart(chart_model, use_container_width=True)
 
-        # === Chart: Predicted Price & Confidence Band ===
+        # === Chart: Predicted Price vs Actual (PU) & Confidence Band ===
         st.markdown("---")
-        st.subheader(f"📉 Predicted Price & Confidence Band ({predicted_year})")
-
-        plot_data = filtered_df[["model_name", "predicted_price", "lower_bound", "upper_bound"]].copy()
+        st.subheader(f"📉 Predicted Price vs Actual (PU) & Confidence Band ({predicted_year})")
+        
+        plot_data = filtered_df[["model_name", "predicted_price", "lower_bound", "upper_bound", "pu"]].copy()
         plot_data = plot_data.groupby("model_name").agg({
             "predicted_price": "mean",
             "lower_bound": "mean",
-            "upper_bound": "mean"
+            "upper_bound": "mean",
+            "pu": "mean"
         }).reset_index()
+        
         plot_data = plot_data.sort_values("predicted_price", ascending=False).head(30)
-        plot_melted = plot_data.melt(id_vars="model_name",
-                                     value_vars=["predicted_price", "lower_bound", "upper_bound"],
-                                     var_name="Type", value_name="Price")
+        
+        plot_melted = plot_data.melt(
+            id_vars="model_name",
+            value_vars=["pu", "predicted_price", "lower_bound", "upper_bound"],
+            var_name="Type", value_name="Price"
+        )
+        
         line_chart = alt.Chart(plot_melted).mark_line(point=True).encode(
             x=alt.X("model_name:N", sort="-y", title="Model"),
-            y=alt.Y("Price:Q", title="Predicted Price (₹)"),
+            y=alt.Y("Price:Q", title="Price (₹)"),
             color=alt.Color("Type:N", scale=alt.Scale(
-                domain=["predicted_price", "lower_bound", "upper_bound"],
-                range=["#1f77b4", "#2ca02c", "#d62728"]),
-                title="Price Type"),
+                domain=["pu", "predicted_price", "lower_bound", "upper_bound"],
+                range=["#9467bd", "#1f77b4", "#2ca02c", "#d62728"]
+            ), title="Price Type"),
             tooltip=["model_name", "Type", alt.Tooltip("Price", format=",.0f")]
         ).properties(width=800, height=400)
+        
         st.altair_chart(line_chart, use_container_width=True)
 
         # === Data Table ===
