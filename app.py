@@ -46,6 +46,7 @@ if selected_tab == "Inside Data":
         state_filter = st.selectbox("Select State", ["All"] + list(df["state"].dropna().unique()))
         model_filter = st.selectbox("Select Model", ["All"] + list(df["model_name"].dropna().unique()))
         bt_filter = st.selectbox("Select Body Type", ["All"] + list(df["bt"].dropna().unique()))
+        location_filter = st.selectbox("Select Location", ["All"] + list(df["location_categories"].dropna().unique()))
 
     with col_right:
         price_filter = st.slider("Price", 0, int(df["pu"].max()), (0, int(df["pu"].max())))
