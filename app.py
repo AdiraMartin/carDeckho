@@ -3,6 +3,7 @@ import pandas as pd
 import altair as alt
 import numpy as np
 import requests
+import joblib
 
 # Set layout to wide
 st.set_page_config(page_title="Car Dashboard", layout="wide")
@@ -149,19 +150,17 @@ if selected_tab == "Inside Data":
         st.markdown("---")
         st.subheader(f"📉 Predicted Price vs Actual (PU) & Confidence Band ({predicted_year})")
         
-        plot_data = filtered_df[["model_name", "predicted_price", "lower_bound", "upper_bound", "pu"]].copy()
+        plot_data = filtered_df[["model_name", "predicted_price", "pu"]].copy()
         plot_data = plot_data.groupby("model_name").agg({
             "predicted_price": "mean",
-            "lower_bound": "mean",
-            "upper_bound": "mean",
             "pu": "mean"
         }).reset_index()
         
-        plot_data = plot_data.sort_values("predicted_price", ascending=False).head(30)
+        plot_data = plot_data.sort_values("predicted_price").head(30)
         
         plot_melted = plot_data.melt(
             id_vars="model_name",
-            value_vars=["pu", "predicted_price", "lower_bound", "upper_bound"],
+            value_vars=["pu", "predicted_price"],
             var_name="Type", value_name="Price"
         )
         
@@ -169,8 +168,8 @@ if selected_tab == "Inside Data":
             x=alt.X("model_name:N", sort="-y", title="Model"),
             y=alt.Y("Price:Q", title="Price (₹)"),
             color=alt.Color("Type:N", scale=alt.Scale(
-                domain=["pu", "predicted_price", "lower_bound", "upper_bound"],
-                range=["#9467bd", "#1f77b4", "#2ca02c", "#d62728"]
+                domain=["pu", "predicted_price"],
+                range=["#9467bd", "#1f77b4"]
             ), title="Price Type"),
             tooltip=["model_name", "Type", alt.Tooltip("Price", format=",.0f")]
         ).properties(width=800, height=400)
